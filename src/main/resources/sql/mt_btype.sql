@@ -1,4 +1,4 @@
-INSERT INTO public.mt_btype(Textile Industry
+INSERT INTO public.mt_btype(
 id, created_on, updated_on, is_active, name, seq, type)
 VALUES (nextval('mt_btype_id_seq'), now(), now(), true, 'Aerospace & Defence Industry', 0, 'AEROSPACE_DEFENCE'),
       (nextval('mt_btype_id_seq'), now(), now(), true, 'Agriculture industry', 1, 'AGRICULTURE'),
