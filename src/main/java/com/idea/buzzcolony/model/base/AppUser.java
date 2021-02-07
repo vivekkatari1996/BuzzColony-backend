@@ -3,13 +3,9 @@ package com.idea.buzzcolony.model.base;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -42,4 +38,6 @@ public class AppUser extends BaseEntity {
 
     @Column(columnDefinition = "TEXT")
     private String password;
+
+    private LocalDate dateOfBirth;
 }

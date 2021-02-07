@@ -11,4 +11,6 @@ public interface UserService {
     ApiResponse login(LoginDto loginDto);
 
     ApiResponse socialLogin(String code);
+
+    ApiResponse getCountries();
 }

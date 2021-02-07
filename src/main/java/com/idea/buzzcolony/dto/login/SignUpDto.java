@@ -20,4 +20,6 @@ public class SignUpDto {
     private String userId;
 
     private String password;
+
+    private String dateOfBirth;
 }

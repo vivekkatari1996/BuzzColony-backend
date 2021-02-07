@@ -9,6 +9,11 @@ import javax.persistence.*;
 import java.sql.Timestamp;
 import java.util.Date;
 
+/**
+ * @author Anand Ramesh
+ * @version 1.0
+ * @since 19/12/20
+ */
 @MappedSuperclass
 @Getter
 @Setter

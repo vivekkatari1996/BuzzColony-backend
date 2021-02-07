@@ -6,4 +6,5 @@ public class Constants {
     public static  final String AUTH_HEADER_TOKEN_PREFIX = "Bearer";
     public static final String AUTH_HEADER_NAME = "Authorization";
     public static final long JWT_VALIDITY = 1 * 24 * 60 * 60 * 1000;// 1 days Validity
+    public static final String DATE = "dd/MM/yyyy";
 }

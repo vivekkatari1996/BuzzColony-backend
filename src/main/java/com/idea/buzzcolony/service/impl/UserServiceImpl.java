@@ -7,8 +7,11 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.idea.buzzcolony.dto.login.LoginDto;
 import com.idea.buzzcolony.dto.login.SignUpDto;
+import com.idea.buzzcolony.dto.master.MtCountryDto;
 import com.idea.buzzcolony.model.base.AppUser;
+import com.idea.buzzcolony.model.master.MtCountry;
 import com.idea.buzzcolony.repo.AppUserRepo;
+import com.idea.buzzcolony.repo.master.MtCountryRepo;
 import com.idea.buzzcolony.service.UserService;
 import com.idea.buzzcolony.util.ApiResponse;
 import com.idea.buzzcolony.util.AppMessage;
@@ -20,7 +23,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -31,10 +38,13 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private AppMessage appMessage;
 
+    @Autowired
+    private MtCountryRepo mtCountryRepo;
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public ApiResponse createUser(SignUpDto signUpDto) throws Exception {
-        if (appUserRepo.existsByEmailIgnoreCase(signUpDto.getEmail()) || appUserRepo.existsByUserIdIgnoreCase(signUpDto.getUserId())) {
+        if (appUserRepo.existsByEmailIgnoreCaseOrUserIdIgnoreCase(signUpDto.getEmail(), signUpDto.getUserId())) {
             throw new Exception(appMessage.getMessage("user.already.exists"));
         }
         AppUser appUser = new AppUser();
@@ -44,6 +54,7 @@ public class UserServiceImpl implements UserService {
         appUser.setPhoneNo(signUpDto.getPhoneNo());
         appUser.setUserId(signUpDto.getUserId());
         appUser.setPassword(new BCryptPasswordEncoder().encode(signUpDto.getPassword()));
+        appUser.setDateOfBirth(LocalDate.parse(signUpDto.getDateOfBirth(), DateTimeFormatter.ofPattern(Constants.DATE)));
         appUserRepo.save(appUser);
         return ApiResponse.getSuccessResponse();
     }
@@ -140,5 +151,11 @@ public class UserServiceImpl implements UserService {
         String givenName = (String) payload.get("given_name");
 
         return payload;
+    }
+
+    @Override
+    public ApiResponse getCountries() {
+        List<MtCountry> mtCountries = mtCountryRepo.findByIsActiveTrueOrderBySeqAsc();
+        return new ApiResponse(HttpStatus.OK, appMessage.getMessage("success"), mtCountries.stream().map(MtCountryDto::new).collect(Collectors.toList()));
     }
 }
