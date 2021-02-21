@@ -6,5 +6,5 @@ package com.idea.buzzcolony.enums.master;
  * @since 07/02/21
  */
 public enum MtCatType {
-
+    DEALERSHIP, SYNDICATE, PATENT, PATENT_INPROCESS
 }

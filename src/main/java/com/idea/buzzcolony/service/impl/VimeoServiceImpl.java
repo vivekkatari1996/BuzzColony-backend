@@ -46,9 +46,21 @@ public class VimeoServiceImpl implements VimeoService {
         return link.substring(link.indexOf(".com/") + 5);
     }
 
+    @Override
     public VimeoRespDto resumableUpload(FileDto fileDto) throws IOException {
         Map<String, String> params = new LinkedHashMap<>();
         params.put("name", fileDto.getName());
+        params.put("privacy.download", "false");
+        params.put("privacy.view", "disable");
+        params.put("privacy.embed", "whitelist");
+        params.put("embed.logos.vimeo", "false");
+        params.put("embed.buttons.like", "false");
+        params.put("embed.buttons.scaling", "false");
+        params.put("embed.buttons.share", "false");
+        params.put("embed.buttons.watchlater", "false");
+        params.put("embed.title.name", "hide");
+        params.put("embed.title.owner", "hide");
+        params.put("embed.title.portrait", "hide");
         params.put("upload.approach", "tus");
         params.put("upload.size", fileDto.getSize().toString());
         RestTemplate restTemplate = new RestTemplate();
@@ -71,7 +83,7 @@ public class VimeoServiceImpl implements VimeoService {
 
         Vimeo vimeo = new Vimeo(token);
         vimeo.patch(uri, params);
-//        vimeo.put(uri + "/privacy/domains/" + "");
+        vimeo.put(uri + "/privacy/domains/" + "buzzcolony.com");
         VimeoResponse info = vimeo.getVideoInfo(uri);
         return new VimeoRespDto(String.valueOf(info.getJson().get("link")), uploadLink);
     }

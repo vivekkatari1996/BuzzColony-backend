@@ -15,4 +15,5 @@ import java.util.Optional;
 @Repository
 public interface PostRepo extends JpaRepository<Post, Long> {
 
+    Optional<Post> findByIdAndAppUser(Long id, AppUser appUser);
 }

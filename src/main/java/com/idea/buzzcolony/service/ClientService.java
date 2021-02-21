@@ -1,6 +1,7 @@
 package com.idea.buzzcolony.service;
 
 import com.idea.buzzcolony.dto.client.PostDto;
+import com.idea.buzzcolony.dto.vimeo.FileDto;
 import com.idea.buzzcolony.util.ApiResponse;
 
 /**
@@ -15,4 +16,14 @@ public interface ClientService {
     ApiResponse getCategories();
 
     ApiResponse getBtypes();
+
+    ApiResponse getEstPartners();
+
+    ApiResponse getEstAmounts();
+
+    ApiResponse uploadVidep(FileDto fileDto) throws Exception;
+
+    ApiResponse getTransCodeStatus(Long id) throws Exception;
+
+    ApiResponse getPosts(PostDto postDto) throws Exception;
 }

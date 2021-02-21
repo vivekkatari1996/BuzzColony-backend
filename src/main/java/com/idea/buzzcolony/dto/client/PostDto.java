@@ -1,8 +1,11 @@
 package com.idea.buzzcolony.dto.client;
 
 import com.idea.buzzcolony.dto.master.MtCategoryDto;
+import com.idea.buzzcolony.dto.master.MtEstAmountDto;
+import com.idea.buzzcolony.dto.master.MtEstPartDto;
 import com.idea.buzzcolony.dto.master.MtSubBtypeDto;
 import com.idea.buzzcolony.model.client.Post;
+import com.idea.buzzcolony.model.master.MtEstAmount;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -21,8 +24,6 @@ public class PostDto {
 
     private String title;
 
-    private String estimatedPartners;
-
     private Long acceptedPartners;
 
     private String description;
@@ -35,20 +36,27 @@ public class PostDto {
 
     private Long mtSubBTypeId;
 
+    private Long mtEstPartId;
+
+    private Long mtEstAmountId;
+
     private PostAddressDto postAddressDto;
 
     private String email;
 
     private String phoneNo;
 
-    private MtCategoryDto mtCategoryDto;
+    private Long mtCategoryId;
 
-    private MtSubBtypeDto mtSubBtypeDto;
+    private String search;
 
-    public PostDto(Post post) {
+    private Integer page;
+
+    private Long mtCountryId;
+
+    public PostDto(Post post, String videoUrl) {
         this.id = post.getId();
         this.title = post.getTitle();
-        this.estimatedPartners = post.getEstimatedPrs();
         this.acceptedPartners = post.getAcceptedPrs();
         this.description = post.getDescription();
         this.isPhNoHidden = post.getIsPhNoHidden();
@@ -57,6 +65,8 @@ public class PostDto {
         this.postAddressDto = new PostAddressDto(post.getPostAddress());
         this.email = post.getAppUser().getEmail();
         this.phoneNo = post.getAppUser().getPhoneNo();
-        this.mtCategoryDto = new MtCategoryDto(post.getMtCategory());
+        this.mtCategoryId = post.getMtCategory().getId();
+        this.mtEstAmountId = post.getMtEstAmount().getId();
+        this.mtEstPartId = post.getMtEstPart().getId();
     }
 }

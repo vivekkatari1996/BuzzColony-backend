@@ -26,7 +26,7 @@ public class PostAddressDto {
 
     private String town;
 
-    private MtCountryDto mtCountryDto;
+    private Long mtCountryId;
 
     public PostAddressDto(PostAddress postAddress) {
         this.id = postAddress.getId();
@@ -34,6 +34,6 @@ public class PostAddressDto {
         this.city = postAddress.getCity();
         this.district = postAddress.getDistrict();
         this.town = postAddress.getTown();
-        this.mtCountryDto = new MtCountryDto(postAddress.getMtCountry());
+        this.mtCountryId = postAddress.getMtCountry().getId();
     }
 }

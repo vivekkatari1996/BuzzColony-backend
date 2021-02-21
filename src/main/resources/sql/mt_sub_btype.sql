@@ -1,7 +1,7 @@
 INSERT INTO public.mt_sub_btype(
 id, created_on, updated_on, is_active, name, seq, type, mt_btype_id)
 VALUES (nextval('mt_sub_btype_id_seq'), now(), now(), true, 'Airlines', 0, 'AIRLINES', (select id from mt_btype where type='AEROSPACE_DEFENCE')),
-(nextval('mt_sub_btype_id_seq'), now(), now(), true, 'Defence', 1, 'DEFENCE', (select id from mt_btype where type='AEROSPACEAEROSPACE_DEFENCE')),
+(nextval('mt_sub_btype_id_seq'), now(), now(), true, 'Defence', 1, 'DEFENCE', (select id from mt_btype where type='AEROSPACE_DEFENCE')),
 (nextval('mt_sub_btype_id_seq'), now(), now(), true, 'Aquaculture', 2, 'AQUACULTURE', (select id from mt_btype where type='AGRICULTURE')),
 (nextval('mt_sub_btype_id_seq'), now(), now(), true, 'Dairy', 3, 'DAIRY', (select id from mt_btype where type='AGRICULTURE')),
 (nextval('mt_sub_btype_id_seq'), now(), now(), true, 'Fertilizers', 4, 'FERTILIZERS', (select id from mt_btype where type='AGRICULTURE')),
@@ -66,7 +66,7 @@ VALUES (nextval('mt_sub_btype_id_seq'), now(), now(), true, 'Airlines', 0, 'AIRL
 (nextval('mt_sub_btype_id_seq'), now(), now(), true, 'Resort', 63, 'RESORT', (select id from mt_btype where type='HOSPITALITY')),
 (nextval('mt_sub_btype_id_seq'), now(), now(), true, 'Restaurants', 64, 'RESTAURANTS', (select id from mt_btype where type='HOSPITALITY')),
 (nextval('mt_sub_btype_id_seq'), now(), now(), true, 'Abrasives', 65, 'ABRASIVES', (select id from mt_btype where type='MANUFACTURING')),
-(nextval('mt_sub_btype_id_seq'), now(), now(), true, 'Aluminium & Aluminium Products', 66, '', (select id from mt_btype where type='MANUFACTURING')),
+(nextval('mt_sub_btype_id_seq'), now(), now(), true, 'Aluminium & Aluminium Products', 66, 'ALUMINIUM_PRODUCTS', (select id from mt_btype where type='MANUFACTURING')),
 (nextval('mt_sub_btype_id_seq'), now(), now(), true, 'Auto Ancillaries', 67, 'AUTO_ANCILLARIES', (select id from mt_btype where type='MANUFACTURING')),
 (nextval('mt_sub_btype_id_seq'), now(), now(), true, 'Air Conditioning Parts(Auto Ancillaries)', 68, 'AIR_CONDITIONING_AUTO_ANCILLARIES', (select id from mt_btype where type='MANUFACTURING')),
 (nextval('mt_sub_btype_id_seq'), now(), now(), true, 'Auto, Truck & Motorcycle Parts(Auto Ancillaries)', 69, 'AUTO_TRUCK_MOTORCYCLE_AUTO_ANCILLARIES', (select id from mt_btype where type='MANUFACTURING')),

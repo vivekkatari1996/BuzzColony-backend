@@ -3,6 +3,8 @@ package com.idea.buzzcolony.model.client;
 import com.idea.buzzcolony.model.base.AppUser;
 import com.idea.buzzcolony.model.base.BaseEntity;
 import com.idea.buzzcolony.model.master.MtCategory;
+import com.idea.buzzcolony.model.master.MtEstAmount;
+import com.idea.buzzcolony.model.master.MtEstPart;
 import com.idea.buzzcolony.model.master.MtSubBtype;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,8 +26,6 @@ public class Post extends BaseEntity {
     @Column(columnDefinition = "TEXT")
     private String title;
 
-    private String estimatedPrs;                    // Estimated Partners
-
     private Long acceptedPrs = 0l;                       // Accepted Partners
 
     @Column(columnDefinition = "TEXT")
@@ -46,6 +46,12 @@ public class Post extends BaseEntity {
 
     @ManyToOne
     private MtCategory mtCategory;
+
+    @ManyToOne
+    private MtEstPart mtEstPart;
+
+    @ManyToOne
+    private MtEstAmount mtEstAmount;
 
     @ManyToOne
     private AppUser appUser;                        // post creator
