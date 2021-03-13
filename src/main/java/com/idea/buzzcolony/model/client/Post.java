@@ -1,5 +1,6 @@
 package com.idea.buzzcolony.model.client;
 
+import com.idea.buzzcolony.enums.post.PostStatus;
 import com.idea.buzzcolony.model.base.AppUser;
 import com.idea.buzzcolony.model.base.BaseEntity;
 import com.idea.buzzcolony.model.master.MtCategory;
@@ -44,6 +45,10 @@ public class Post extends BaseEntity {
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private PostAddress postAddress;
 
+    @Enumerated(EnumType.STRING)
+    @Column(columnDefinition = "character varying(255) default 'PENDING'", nullable = false)
+    private PostStatus status = PostStatus.PENDING;
+
     @ManyToOne
     private MtCategory mtCategory;
 
@@ -55,4 +60,7 @@ public class Post extends BaseEntity {
 
     @ManyToOne
     private AppUser appUser;                        // post creator
+
+    @Column(columnDefinition = "boolean default true")
+    private Boolean isActive = Boolean.TRUE;
 }

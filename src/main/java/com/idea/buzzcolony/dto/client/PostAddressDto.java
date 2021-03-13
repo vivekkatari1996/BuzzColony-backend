@@ -1,5 +1,6 @@
 package com.idea.buzzcolony.dto.client;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.idea.buzzcolony.dto.master.MtCountryDto;
 import com.idea.buzzcolony.model.client.PostAddress;
 import lombok.Getter;
@@ -14,6 +15,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class PostAddressDto {
 
     private Long id;

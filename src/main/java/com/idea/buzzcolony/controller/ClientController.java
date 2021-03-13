@@ -57,7 +57,7 @@ public class ClientController {
         return new ResponseEntity<>(apiResponse, apiResponse.getStatus());
     }
 
-    @GetMapping("transcode-status")
+//    @GetMapping("transcode-status")
     public ResponseEntity<ApiResponse> getTransCodeStatus(@RequestParam Long id) throws Exception {
         ApiResponse apiResponse = clientService.getTransCodeStatus(id);
         return new ResponseEntity<>(apiResponse, apiResponse.getStatus());
@@ -66,6 +66,24 @@ public class ClientController {
     @PostMapping("posts")
     public ResponseEntity<ApiResponse> getPosts(@RequestBody PostDto postDto) throws Exception {
         ApiResponse apiResponse = clientService.getPosts(postDto);
+        return new ResponseEntity<>(apiResponse, apiResponse.getStatus());
+    }
+
+    @GetMapping("confirm-video-upload")
+    public ResponseEntity<ApiResponse> confirmVideoUpload(@RequestParam Long id) throws Exception {
+        ApiResponse apiResponse = clientService.confirmVideoUpload(id);
+        return new ResponseEntity<>(apiResponse, apiResponse.getStatus());
+    }
+
+    @GetMapping("post-details")
+    public ResponseEntity<ApiResponse> getPostDetails(@RequestParam Long id) throws Exception {
+        ApiResponse apiResponse = clientService.getPostDetails(id);
+        return new ResponseEntity<>(apiResponse, apiResponse.getStatus());
+    }
+
+    @GetMapping("profile-details")
+    public ResponseEntity<ApiResponse> getProfileDetails() throws Exception {
+        ApiResponse apiResponse = clientService.getProfileDetails();
         return new ResponseEntity<>(apiResponse, apiResponse.getStatus());
     }
 }

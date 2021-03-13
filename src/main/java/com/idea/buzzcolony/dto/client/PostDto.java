@@ -1,14 +1,14 @@
 package com.idea.buzzcolony.dto.client;
 
-import com.idea.buzzcolony.dto.master.MtCategoryDto;
-import com.idea.buzzcolony.dto.master.MtEstAmountDto;
-import com.idea.buzzcolony.dto.master.MtEstPartDto;
-import com.idea.buzzcolony.dto.master.MtSubBtypeDto;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.idea.buzzcolony.enums.post.PostRequest;
 import com.idea.buzzcolony.model.client.Post;
-import com.idea.buzzcolony.model.master.MtEstAmount;
+import com.idea.buzzcolony.model.client.PostResp;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.Optional;
 
 /**
  * @author Anand Ramesh
@@ -18,6 +18,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class PostDto {
 
     private Long id;
@@ -54,19 +55,36 @@ public class PostDto {
 
     private Long mtCountryId;
 
-    public PostDto(Post post, String videoUrl) {
+    private String videoUrl;
+
+    private Boolean isSaved = Boolean.FALSE;
+
+    private String requestStatus = PostRequest.NOT_YET_SENT.name();
+
+    public PostDto(Post post, String videoUrl, Boolean isFullDetails) {
+        if (isFullDetails) {
+            this.acceptedPartners = post.getAcceptedPrs();
+            this.isPhNoHidden = post.getIsPhNoHidden();
+            this.occupation = post.getOccupation();
+            this.bType = post.getBType();
+            this.postAddressDto = new PostAddressDto(post.getPostAddress());
+            this.email = post.getAppUser().getEmail();
+            this.phoneNo = post.getAppUser().getPhoneNo();
+            this.mtCategoryId = post.getMtCategory().getId();
+            this.mtEstAmountId = post.getMtEstAmount().getId();
+            this.mtEstPartId = post.getMtEstPart().getId();
+        }
         this.id = post.getId();
         this.title = post.getTitle();
-        this.acceptedPartners = post.getAcceptedPrs();
         this.description = post.getDescription();
-        this.isPhNoHidden = post.getIsPhNoHidden();
-        this.occupation = post.getOccupation();
-        this.bType = post.getBType();
-        this.postAddressDto = new PostAddressDto(post.getPostAddress());
-        this.email = post.getAppUser().getEmail();
-        this.phoneNo = post.getAppUser().getPhoneNo();
-        this.mtCategoryId = post.getMtCategory().getId();
-        this.mtEstAmountId = post.getMtEstAmount().getId();
-        this.mtEstPartId = post.getMtEstPart().getId();
+        this.videoUrl = videoUrl;
+    }
+
+    public PostDto(Post post, String videoUrl, Boolean isFullDetails, Optional<PostResp> optionalPostResp) {
+        this(post, videoUrl, isFullDetails);
+        if (optionalPostResp.isPresent()) {
+            this.isSaved = optionalPostResp.get().getIsSaved();
+            this.requestStatus = optionalPostResp.get().getReqStatus().name();
+        }
     }
 }

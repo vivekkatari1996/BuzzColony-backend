@@ -26,4 +26,10 @@ public interface ClientService {
     ApiResponse getTransCodeStatus(Long id) throws Exception;
 
     ApiResponse getPosts(PostDto postDto) throws Exception;
+
+    ApiResponse confirmVideoUpload(Long id) throws Exception;
+
+    ApiResponse getPostDetails(Long id) throws Exception;
+
+    ApiResponse getProfileDetails() throws Exception;
 }
