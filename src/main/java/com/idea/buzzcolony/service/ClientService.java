@@ -1,6 +1,7 @@
 package com.idea.buzzcolony.service;
 
 import com.idea.buzzcolony.dto.client.PostDto;
+import com.idea.buzzcolony.dto.login.SignUpDto;
 import com.idea.buzzcolony.dto.vimeo.FileDto;
 import com.idea.buzzcolony.util.ApiResponse;
 
@@ -34,4 +35,6 @@ public interface ClientService {
     ApiResponse getProfileDetails() throws Exception;
 
     ApiResponse makeUserInActive() throws Exception;
+
+    ApiResponse updateProfileDetails(SignUpDto signUpDto) throws Exception;
 }

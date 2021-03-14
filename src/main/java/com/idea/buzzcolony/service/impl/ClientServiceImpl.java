@@ -21,6 +21,7 @@ import com.idea.buzzcolony.repo.client.PostRepo;
 import com.idea.buzzcolony.repo.client.PostRespRepo;
 import com.idea.buzzcolony.repo.master.*;
 import com.idea.buzzcolony.service.ClientService;
+import com.idea.buzzcolony.service.S3Service;
 import com.idea.buzzcolony.service.VimeoService;
 import com.idea.buzzcolony.util.ApiResponse;
 import com.idea.buzzcolony.util.AppMessage;
@@ -89,6 +90,9 @@ public class ClientServiceImpl implements ClientService {
 
     @Autowired
     private PostRespRepo postRespRepo;
+
+    @Autowired
+    private S3Service s3Service;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -322,6 +326,39 @@ public class ClientServiceImpl implements ClientService {
     public ApiResponse getProfileDetails() throws Exception {
         AppUser appUser = Utility.getApplicationUserFromAuthentication(appUserRepo);
         return new ApiResponse(HttpStatus.OK, appMessage.getMessage("success"), new SignUpDto(appUser));
+    }
+
+    @Override
+    public ApiResponse updateProfileDetails(SignUpDto signUpDto) throws Exception{
+        AppUser appUser = Utility.getApplicationUserFromAuthentication(appUserRepo);
+        appUser.setFirstName(signUpDto.getFirstName());
+        appUser.setLastName(signUpDto.getLastName());
+        appUser.setPermanentAddress(signUpDto.getPermanentAddress());
+        appUser.setTempAddress(signUpDto.getTempAddress());
+        appUser.setOccupation(signUpDto.getDateOfBirth());
+        appUser.setAboutMe(signUpDto.getAboutMe());
+        appUser.setPhoneNo(signUpDto.getPhoneNo());
+        FileDto fileDto = uploadProfilePic(appUser, signUpDto.getProfilePicDto());
+        return new ApiResponse(HttpStatus.OK, appMessage.getMessage("success"), fileDto.getDocumentUrl());
+    }
+
+    private FileDto uploadProfilePic(AppUser appUser, FileDto fileDto) throws Exception {
+        Optional<FileEntity> optionalFileEntity = fileEntityRepo.findByRefIdAndFileType(appUser.getId(), FileType.PROFILE_PIC);
+        if (optionalFileEntity.isPresent()) {
+            fileDto.setUuid(optionalFileEntity.get().getUuid());
+        }
+        fileDto = s3Service.getPreSignedUrlForUpload(fileDto);
+        if (!optionalFileEntity.isPresent()){
+            FileEntity fileEntity = new FileEntity();
+            fileEntity.setUuid(fileDto.getUuid());
+            fileEntity.setRefId(appUser.getId());
+            fileEntity.setName(fileDto.getName());
+            fileEntity.setType(fileDto.getType());
+            fileEntity.setSize(fileDto.getSize());
+            fileEntity.setFileType(FileType.PROFILE_PIC);
+            fileEntityRepo.save(fileEntity);
+        }
+        return fileDto;
     }
 
     @Override

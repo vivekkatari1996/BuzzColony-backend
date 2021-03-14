@@ -1,5 +1,6 @@
 package com.idea.buzzcolony.dto.login;
 
+import com.idea.buzzcolony.dto.vimeo.FileDto;
 import com.idea.buzzcolony.model.base.AppUser;
 import com.idea.buzzcolony.util.Constants;
 import lombok.Getter;
@@ -26,6 +27,16 @@ public class SignUpDto {
     private String password;
 
     private String dateOfBirth;
+
+    private String permanentAddress;
+
+    private String tempAddress;
+
+    private FileDto profilePicDto;
+
+    private String occupation;
+
+    private String aboutMe;
 
     public SignUpDto(AppUser appUser) {
         this.firstName = appUser.getFirstName();

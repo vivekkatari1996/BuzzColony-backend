@@ -40,4 +40,16 @@ public class AppUser extends BaseEntity {
     private String password;
 
     private LocalDate dateOfBirth;
+
+    @Column(columnDefinition = "TEXT")
+    private String permanentAddress;
+
+    @Column(columnDefinition = "TEXT")
+    private String tempAddress;
+
+    @Column(columnDefinition = "TEXT")
+    private String occupation;
+
+    @Column(columnDefinition = "TEXT")
+    private String aboutMe;
 }

@@ -6,5 +6,5 @@ package com.idea.buzzcolony.enums.base;
  * @since 19/12/20
  */
 public enum FileType {
-    POST
+    POST, PROFILE_PIC
 }

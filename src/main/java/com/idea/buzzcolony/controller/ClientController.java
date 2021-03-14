@@ -1,6 +1,7 @@
 package com.idea.buzzcolony.controller;
 
 import com.idea.buzzcolony.dto.client.PostDto;
+import com.idea.buzzcolony.dto.login.SignUpDto;
 import com.idea.buzzcolony.dto.vimeo.FileDto;
 import com.idea.buzzcolony.service.ClientService;
 import com.idea.buzzcolony.util.ApiResponse;
@@ -78,6 +79,12 @@ public class ClientController {
     @GetMapping("post-details")
     public ResponseEntity<ApiResponse> getPostDetails(@RequestParam Long id) throws Exception {
         ApiResponse apiResponse = clientService.getPostDetails(id);
+        return new ResponseEntity<>(apiResponse, apiResponse.getStatus());
+    }
+
+    @PostMapping("profile-details")
+    public ResponseEntity<ApiResponse> updateProfileDetails(@RequestBody SignUpDto signUpDto) throws Exception {
+        ApiResponse apiResponse = clientService.updateProfileDetails(signUpDto);
         return new ResponseEntity<>(apiResponse, apiResponse.getStatus());
     }
 
