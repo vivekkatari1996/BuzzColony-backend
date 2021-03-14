@@ -226,7 +226,12 @@ public class ClientServiceImpl implements ClientService {
         root.alias("rootAlias");
         List<Predicate> predicateList = new ArrayList<>();
 
-        Predicate statusPredicate = cb.and(cb.equal(root.get("status"), PostStatus.DONE), cb.notEqual(appUser.get("id"), loggedInUser.getId()));
+        Predicate statusPredicate;
+        if (postDto.getIsOwnPosts()) {
+            statusPredicate = cb.and(cb.equal(root.get("status"), PostStatus.DONE), cb.equal(appUser.get("id"), loggedInUser.getId()));
+        } else {
+            statusPredicate = cb.and(cb.equal(root.get("status"), PostStatus.DONE), cb.notEqual(appUser.get("id"), loggedInUser.getId()));
+        }
         predicateList.add(statusPredicate);
 
         Predicate isActiveTrue = cb.and(cb.equal(appUser.get("isActive"), Boolean.TRUE), cb.equal(root.get("isActive"), Boolean.TRUE));
@@ -317,5 +322,13 @@ public class ClientServiceImpl implements ClientService {
     public ApiResponse getProfileDetails() throws Exception {
         AppUser appUser = Utility.getApplicationUserFromAuthentication(appUserRepo);
         return new ApiResponse(HttpStatus.OK, appMessage.getMessage("success"), new SignUpDto(appUser));
+    }
+
+    @Override
+    public ApiResponse makeUserInActive() throws Exception {
+        AppUser appUser = Utility.getApplicationUserFromAuthentication(appUserRepo);
+        appUser.setIsActive(Boolean.FALSE);
+        appUserRepo.save(appUser);
+        return ApiResponse.getSuccessResponse();
     }
 }

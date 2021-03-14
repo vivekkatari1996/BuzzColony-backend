@@ -32,4 +32,6 @@ public interface ClientService {
     ApiResponse getPostDetails(Long id) throws Exception;
 
     ApiResponse getProfileDetails() throws Exception;
+
+    ApiResponse makeUserInActive() throws Exception;
 }

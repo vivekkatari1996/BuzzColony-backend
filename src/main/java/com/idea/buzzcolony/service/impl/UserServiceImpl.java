@@ -5,12 +5,16 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
+import com.idea.buzzcolony.dto.login.ForgetPassDto;
 import com.idea.buzzcolony.dto.login.LoginDto;
 import com.idea.buzzcolony.dto.login.SignUpDto;
 import com.idea.buzzcolony.dto.master.MtCountryDto;
+import com.idea.buzzcolony.enums.base.TokenType;
 import com.idea.buzzcolony.model.base.AppUser;
+import com.idea.buzzcolony.model.base.TokenStore;
 import com.idea.buzzcolony.model.master.MtCountry;
 import com.idea.buzzcolony.repo.AppUserRepo;
+import com.idea.buzzcolony.repo.TokenStoreRepo;
 import com.idea.buzzcolony.repo.master.MtCountryRepo;
 import com.idea.buzzcolony.service.UserService;
 import com.idea.buzzcolony.util.ApiResponse;
@@ -41,6 +45,9 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private MtCountryRepo mtCountryRepo;
 
+    @Autowired
+    private TokenStoreRepo tokenStoreRepo;
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public ApiResponse createUser(SignUpDto signUpDto) throws Exception {
@@ -55,8 +62,9 @@ public class UserServiceImpl implements UserService {
         appUser.setUserId(signUpDto.getUserId());
         appUser.setPassword(new BCryptPasswordEncoder().encode(signUpDto.getPassword()));
         appUser.setDateOfBirth(LocalDate.parse(signUpDto.getDateOfBirth(), DateTimeFormatter.ofPattern(Constants.DATE)));
-        appUserRepo.save(appUser);
-        return ApiResponse.getSuccessResponse();
+        appUser = appUserRepo.save(appUser);
+        String token = createToken(appUser, TokenType.VERIFY_EMAIL);
+        return new ApiResponse(HttpStatus.OK, appMessage.getMessage("success"), token);
     }
 
     @Override
@@ -64,6 +72,12 @@ public class UserServiceImpl implements UserService {
         Optional<AppUser> optionalAppUser = appUserRepo.findByEmailIgnoreCaseOrUserIdIgnoreCaseAndIsActiveTrue(loginDto.getUserId(), loginDto.getUserId());
         if (!optionalAppUser.isPresent() || !new BCryptPasswordEncoder().matches(loginDto.getPassword(), optionalAppUser.get().getPassword())) {
             return new ApiResponse(HttpStatus.BAD_REQUEST, appMessage.getMessage("invalid.credentials"), null);
+        }
+        if (!optionalAppUser.get().getIsEmailVerified()) {
+            return new ApiResponse(HttpStatus.BAD_REQUEST, appMessage.getMessage("error.verify.email"), null);
+        }
+        if (!optionalAppUser.get().getIsActive()) {
+            return new ApiResponse(HttpStatus.BAD_REQUEST, appMessage.getMessage("error.deactivate.account"), null);
         }
         loginDto = new LoginDto();
         loginDto.setUserId(optionalAppUser.get().getEmail());
@@ -158,4 +172,53 @@ public class UserServiceImpl implements UserService {
         List<MtCountry> mtCountries = mtCountryRepo.findByIsActiveTrueOrderBySeqAsc();
         return new ApiResponse(HttpStatus.OK, appMessage.getMessage("success"), mtCountries.stream().map(MtCountryDto::new).collect(Collectors.toList()));
     }
+
+    @Override
+    public ApiResponse getForgetPassMail(String email) throws Exception {
+        AppUser appUser = appUserRepo.findByEmailIgnoreCaseAndIsActiveTrue(email).orElseThrow(() -> new Exception(appMessage.getMessage("something.went.wrong")));
+        String token = createToken(appUser, TokenType.FORGET_PASS);
+        return new ApiResponse(HttpStatus.OK, appMessage.getMessage("success"), token);
+    }
+
+    private String createToken(AppUser appUser, TokenType type) throws Exception{
+        String token = Utility.createToken(appUser.getEmail(), Constants.JWT_VALIDITY);
+        TokenStore tokenStore = new TokenStore(token, type, appUser);
+        tokenStoreRepo.save(tokenStore);
+        return token;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public ApiResponse verifyForgetPassMail(ForgetPassDto forgetPassDto) throws Exception {
+        TokenStore tokenStore = verifyToken(forgetPassDto.getToken());
+        AppUser appUser = tokenStore.getAppUser();
+        appUser.setPassword(new BCryptPasswordEncoder().encode(forgetPassDto.getPassword()));
+        appUserRepo.save(appUser);
+        tokenStoreRepo.delete(tokenStore);
+        return ApiResponse.getSuccessResponse();
+    }
+
+    private TokenStore verifyToken(String token) throws Exception {
+        String email = Utility.getEmailFromToken(token);
+        TokenStore tokenStore = tokenStoreRepo.findByToken(token).orElseThrow(() -> new Exception(appMessage.getMessage("token.already.used")));;
+        return tokenStore;
+    }
+
+    @Override
+    public ApiResponse sendVerifyMail(String email) throws Exception {
+        AppUser appUser = appUserRepo.findByEmailIgnoreCaseAndIsActiveTrue(email).orElseThrow(() -> new Exception(appMessage.getMessage("data.not.found")));
+        String token = createToken(appUser, TokenType.VERIFY_EMAIL);
+        return new ApiResponse(HttpStatus.OK, appMessage.getMessage("success"), token);
+    }
+
+    @Override
+    public ApiResponse verifyEmail(String token) throws Exception {
+        TokenStore tokenStore = verifyToken(token);
+        AppUser appUser = tokenStore.getAppUser();
+        appUser.setIsEmailVerified(Boolean.TRUE);
+        appUserRepo.save(appUser);
+        tokenStoreRepo.delete(tokenStore);
+        return ApiResponse.getSuccessResponse();
+    }
+
 }

@@ -61,6 +61,8 @@ public class PostDto {
 
     private String requestStatus = PostRequest.NOT_YET_SENT.name();
 
+    private Boolean isOwnPosts = Boolean.FALSE;
+
     public PostDto(Post post, String videoUrl, Boolean isFullDetails) {
         if (isFullDetails) {
             this.acceptedPartners = post.getAcceptedPrs();
