@@ -1,5 +1,6 @@
 package com.idea.buzzcolony.dto.login;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.idea.buzzcolony.dto.vimeo.FileDto;
 import com.idea.buzzcolony.model.base.AppUser;
 import com.idea.buzzcolony.util.Constants;
@@ -12,6 +13,7 @@ import java.time.format.DateTimeFormatter;
 @Getter
 @Setter
 @NoArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class SignUpDto {
 
     private String firstName;
@@ -38,6 +40,8 @@ public class SignUpDto {
 
     private String aboutMe;
 
+    private Boolean isActive = Boolean.TRUE;
+
     public SignUpDto(AppUser appUser) {
         this.firstName = appUser.getFirstName();
         this.lastName = appUser.getLastName();
@@ -45,5 +49,9 @@ public class SignUpDto {
         this.phoneNo = appUser.getPhoneNo();
         this.userId = appUser.getUserId();
         this.dateOfBirth = appUser.getDateOfBirth().format(DateTimeFormatter.ofPattern(Constants.DATE));
+        this.tempAddress = appUser.getTempAddress();
+        this.permanentAddress = appUser.getPermanentAddress();
+        this.aboutMe = appUser.getAboutMe();
+        this.occupation = appUser.getOccupation();
     }
 }

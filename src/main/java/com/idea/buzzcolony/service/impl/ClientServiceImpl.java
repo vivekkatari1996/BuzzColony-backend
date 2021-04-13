@@ -32,12 +32,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -213,9 +216,13 @@ public class ClientServiceImpl implements ClientService {
             throw new Exception(appMessage.getMessage("data.not.found"));
         }
         List<PostResp> postResps = postRespRepo.findByPostInAndAppUser(posts.getContent(), appUser);
+        List<Long> appUserIds = posts.getContent().stream().map(i -> i.getAppUser().getId()).collect(Collectors.toList());
+        List<FileEntity> profilePics = fileEntityRepo.findByRefIdInAndFileType(appUserIds, FileType.PROFILE_PIC);
+        List<PostDto> postDtos = posts.getContent().stream().map(post -> new PostDto(post,
+                videos.stream().filter(i -> i.getRefId().longValue() == post.getId().longValue()).findFirst().get().getUuid(), Boolean.FALSE,
+                postResps.stream().filter(i -> i.getPost().getId().longValue() == post.getId().longValue()).findFirst(), profilePics, s3Service)).collect(Collectors.toList());
         apiResponse.setStatus(HttpStatus.OK);
         apiResponse.setMessage(appMessage.getMessage("success"));
-        List<PostDto> postDtos = posts.getContent().stream().map(post -> new PostDto(post, videos.stream().filter(i -> i.getRefId().longValue() == post.getId().longValue()).findFirst().get().getUuid(), Boolean.FALSE, postResps.stream().filter(i -> i.getPost().getId().longValue() == post.getId().longValue()).findFirst())).collect(Collectors.toList());
         apiResponse.setData(new PageImpl<>(postDtos, posts.getPageable(), posts.getTotalElements()));
         return apiResponse;
     }
@@ -323,23 +330,43 @@ public class ClientServiceImpl implements ClientService {
     }
 
     @Override
-    public ApiResponse getProfileDetails() throws Exception {
-        AppUser appUser = Utility.getApplicationUserFromAuthentication(appUserRepo);
+    public ApiResponse getProfileDetails(Long id) throws Exception {
+        AppUser appUser;
+        if (id != null && !id.equals(0)) {
+            Optional<AppUser> optionalAppUser = appUserRepo.findById(id);
+            if (!optionalAppUser.isPresent()) {
+                throw new Exception(appMessage.getMessage("data.not.found"));
+            }
+            appUser = optionalAppUser.get();
+        } else {
+            appUser = Utility.getApplicationUserFromAuthentication(appUserRepo);
+        }
         return new ApiResponse(HttpStatus.OK, appMessage.getMessage("success"), new SignUpDto(appUser));
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public ApiResponse updateProfileDetails(SignUpDto signUpDto) throws Exception{
         AppUser appUser = Utility.getApplicationUserFromAuthentication(appUserRepo);
+        if (!new BCryptPasswordEncoder().matches(signUpDto.getPassword(), appUser.getPassword())) {
+            return new ApiResponse(HttpStatus.UNAUTHORIZED, appMessage.getMessage("invalid.credentials"), null);
+        }
         appUser.setFirstName(signUpDto.getFirstName());
         appUser.setLastName(signUpDto.getLastName());
         appUser.setPermanentAddress(signUpDto.getPermanentAddress());
         appUser.setTempAddress(signUpDto.getTempAddress());
-        appUser.setOccupation(signUpDto.getDateOfBirth());
+        appUser.setOccupation(signUpDto.getOccupation());
         appUser.setAboutMe(signUpDto.getAboutMe());
         appUser.setPhoneNo(signUpDto.getPhoneNo());
-        FileDto fileDto = uploadProfilePic(appUser, signUpDto.getProfilePicDto());
-        return new ApiResponse(HttpStatus.OK, appMessage.getMessage("success"), fileDto.getDocumentUrl());
+        appUser.setDateOfBirth(LocalDate.parse(signUpDto.getDateOfBirth(), DateTimeFormatter.ofPattern(Constants.DATE)));
+        appUser.setIsActive(signUpDto.getIsActive());
+        appUser = appUserRepo.save(appUser);
+        FileDto fileDto = signUpDto.getProfilePicDto();
+        if (fileDto != null) {
+            fileDto = uploadProfilePic(appUser, fileDto);
+            return new ApiResponse(HttpStatus.OK, appMessage.getMessage("success"), fileDto.getDocumentUrl());
+        }
+        return ApiResponse.getSuccessResponse();
     }
 
     private FileDto uploadProfilePic(AppUser appUser, FileDto fileDto) throws Exception {

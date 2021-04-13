@@ -2,12 +2,15 @@ package com.idea.buzzcolony.dto.client;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.idea.buzzcolony.enums.post.PostRequest;
+import com.idea.buzzcolony.model.base.FileEntity;
 import com.idea.buzzcolony.model.client.Post;
 import com.idea.buzzcolony.model.client.PostResp;
+import com.idea.buzzcolony.service.S3Service;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -63,6 +66,10 @@ public class PostDto {
 
     private Boolean isOwnPosts = Boolean.FALSE;
 
+    private String name;
+
+    private String profilePicUrl;
+
     public PostDto(Post post, String videoUrl, Boolean isFullDetails) {
         if (isFullDetails) {
             this.acceptedPartners = post.getAcceptedPrs();
@@ -80,6 +87,9 @@ public class PostDto {
         this.title = post.getTitle();
         this.description = post.getDescription();
         this.videoUrl = videoUrl;
+        String name = post.getAppUser().getFirstName();
+        name += post.getAppUser().getLastName() != null ? post.getAppUser().getLastName() : "";
+        this.name = name;
     }
 
     public PostDto(Post post, String videoUrl, Boolean isFullDetails, Optional<PostResp> optionalPostResp) {
@@ -87,6 +97,14 @@ public class PostDto {
         if (optionalPostResp.isPresent()) {
             this.isSaved = optionalPostResp.get().getIsSaved();
             this.requestStatus = optionalPostResp.get().getReqStatus().name();
+        }
+    }
+
+    public PostDto(Post post, String videoUrl, Boolean isFullDetails, Optional<PostResp> optionalPostResp, List<FileEntity> profilePics, S3Service s3Service) {
+        this(post, videoUrl, isFullDetails, optionalPostResp);
+        Optional<FileEntity> profilePic = profilePics.stream().filter(i -> i.getRefId().longValue() == post.getAppUser().getId().longValue()).findFirst();
+        if (profilePic.isPresent()) {
+            this.profilePicUrl = s3Service.getPreSignedUrlForDownload(profilePic.get().getUuid());
         }
     }
 }

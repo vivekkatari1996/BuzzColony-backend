@@ -89,12 +89,12 @@ public class ClientController {
     }
 
     @GetMapping("profile-details")
-    public ResponseEntity<ApiResponse> getProfileDetails() throws Exception {
-        ApiResponse apiResponse = clientService.getProfileDetails();
+    public ResponseEntity<ApiResponse> getProfileDetails(@RequestParam(required = false, defaultValue = "0") Long id) throws Exception {
+        ApiResponse apiResponse = clientService.getProfileDetails(id);
         return new ResponseEntity<>(apiResponse, apiResponse.getStatus());
     }
 
-    @GetMapping("/inactive")
+//    @GetMapping("/inactive")
     public ResponseEntity<ApiResponse> makeUserInActive() throws Exception {
         ApiResponse apiResponse = clientService.makeUserInActive();
         return new ResponseEntity<>(apiResponse, apiResponse.getStatus());

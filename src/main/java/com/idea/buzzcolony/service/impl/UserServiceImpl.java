@@ -80,7 +80,8 @@ public class UserServiceImpl implements UserService {
             return new ApiResponse(HttpStatus.BAD_REQUEST, appMessage.getMessage("error.deactivate.account"), null);
         }
         loginDto = new LoginDto();
-        loginDto.setUserId(optionalAppUser.get().getEmail());
+        loginDto.setUserId(optionalAppUser.get().getUserId());
+        loginDto.setEmail(optionalAppUser.get().getEmail());
         loginDto.setToken(Utility.createToken(optionalAppUser.get().getEmail(), Constants.JWT_VALIDITY));
         return new ApiResponse(HttpStatus.OK, appMessage.getMessage("success"), loginDto);
     }

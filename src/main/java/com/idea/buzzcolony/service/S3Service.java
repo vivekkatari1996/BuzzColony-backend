@@ -12,5 +12,5 @@ public interface S3Service {
 
     FileDto getPreSignedUrlForUpload(FileDto fileDto) throws Exception;
 
-    ApiResponse getPreSignedUrlForDownload(FileDto fileDto);
+    String getPreSignedUrlForDownload(String url);
 }

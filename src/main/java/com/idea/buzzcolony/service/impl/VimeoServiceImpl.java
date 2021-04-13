@@ -84,6 +84,7 @@ public class VimeoServiceImpl implements VimeoService {
         Vimeo vimeo = new Vimeo(token);
         vimeo.patch(uri, params);
         vimeo.put(uri + "/privacy/domains/" + "buzzcolony.com");
+        vimeo.put(uri + "/privacy/domains/" + "localhost");
         VimeoResponse info = vimeo.getVideoInfo(uri);
         return new VimeoRespDto(String.valueOf(info.getJson().get("link")), uploadLink);
     }

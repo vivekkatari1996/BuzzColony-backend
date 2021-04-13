@@ -64,8 +64,8 @@ public class S3ServiceImpl implements S3Service {
     }
 
     @Override
-    public ApiResponse getPreSignedUrlForDownload(FileDto fileDto) {
-        ApiResponse apiResponse = ApiResponse.getFailureResponse();
+    public String getPreSignedUrlForDownload(String uuid) {
+        String result = "";
         try {
             AmazonS3 s3Client = AmazonS3ClientBuilder.standard().withRegion(Regions.AP_SOUTHEAST_1).build();
             // Set the presigned URL to expire after 15 minutes.
@@ -77,21 +77,17 @@ public class S3ServiceImpl implements S3Service {
             // Generate the presigned URL.
             System.out.println("Generating pre-signed URL.");
             GeneratePresignedUrlRequest generatePresignedUrlRequest =
-                    new GeneratePresignedUrlRequest(bucketName, fileDto.getUuid())
+                    new GeneratePresignedUrlRequest("buzz-colony-profile-pic", uuid)
                             .withMethod(HttpMethod.GET)
                             .withExpiration(expiration);
             URL url = s3Client.generatePresignedUrl(generatePresignedUrlRequest);
-
-            apiResponse = ApiResponse.getSuccessResponse();
-            System.out.println("Pre-Signed URL For Download: " + url.toString());
-            fileDto.setDocumentUrl(url.toString());
-            apiResponse.setData(fileDto);
+            result = url.toString();
         } catch (AmazonServiceException e) {
             logger.error("Error! ", e);
         } catch (SdkClientException e) {
             logger.error("Error! ", e);
         }
-        return apiResponse;
+        return result;
     }
 
 }
