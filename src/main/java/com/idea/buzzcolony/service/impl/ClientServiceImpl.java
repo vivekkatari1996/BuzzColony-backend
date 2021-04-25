@@ -7,17 +7,20 @@ import com.idea.buzzcolony.dto.master.*;
 import com.idea.buzzcolony.dto.vimeo.FileDto;
 import com.idea.buzzcolony.dto.vimeo.VimeoRespDto;
 import com.idea.buzzcolony.enums.base.FileType;
+import com.idea.buzzcolony.enums.post.PostRequest;
 import com.idea.buzzcolony.enums.post.PostStatus;
 import com.idea.buzzcolony.model.base.AppUser;
 import com.idea.buzzcolony.model.base.BaseEntity;
 import com.idea.buzzcolony.model.base.FileEntity;
 import com.idea.buzzcolony.model.client.Post;
 import com.idea.buzzcolony.model.client.PostAddress;
+import com.idea.buzzcolony.model.client.PostReport;
 import com.idea.buzzcolony.model.client.PostResp;
 import com.idea.buzzcolony.model.master.*;
 import com.idea.buzzcolony.repo.AppUserRepo;
 import com.idea.buzzcolony.repo.FileEntityRepo;
 import com.idea.buzzcolony.repo.client.PostRepo;
+import com.idea.buzzcolony.repo.client.PostReportRepo;
 import com.idea.buzzcolony.repo.client.PostRespRepo;
 import com.idea.buzzcolony.repo.master.*;
 import com.idea.buzzcolony.service.ClientService;
@@ -93,6 +96,9 @@ public class ClientServiceImpl implements ClientService {
 
     @Autowired
     private PostRespRepo postRespRepo;
+
+    @Autowired
+    private PostReportRepo postReportRepo;
 
     @Autowired
     private S3Service s3Service;
@@ -253,7 +259,8 @@ public class ClientServiceImpl implements ClientService {
             Expression<String> function = cb.function("replace",
                     String.class, cb.concat(cb.upper(appUser.get("firstName")), cb.upper(appUser.get("lastName"))), cb.literal(" "),
                     cb.literal(""));
-            Predicate searchQueryPredicate = cb.or(cb.like(function, "%" + search.toUpperCase() + "%"), cb.like(cb.upper(root.get("title")), "%" + search.toUpperCase() + "%"));
+            Predicate searchQueryPredicate = cb.or(cb.like(function, "%" + search.toUpperCase() + "%"), cb.like(cb.upper(root.get("title")), "%" + search.toUpperCase() + "%")
+                                                    , cb.like(cb.upper(appUser.get("email")), "%" + search.toUpperCase() + "%"));
             predicateList.add(searchQueryPredicate);
         }
 
@@ -332,7 +339,7 @@ public class ClientServiceImpl implements ClientService {
     @Override
     public ApiResponse getProfileDetails(Long id) throws Exception {
         AppUser appUser;
-        if (id != null && !id.equals(0)) {
+        if (id != null && !id.equals(0L)) {
             Optional<AppUser> optionalAppUser = appUserRepo.findById(id);
             if (!optionalAppUser.isPresent()) {
                 throw new Exception(appMessage.getMessage("data.not.found"));
@@ -393,6 +400,59 @@ public class ClientServiceImpl implements ClientService {
         AppUser appUser = Utility.getApplicationUserFromAuthentication(appUserRepo);
         appUser.setIsActive(Boolean.FALSE);
         appUserRepo.save(appUser);
+        return ApiResponse.getSuccessResponse();
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public ApiResponse saveOrUnsavePost(Long postId) throws Exception {
+        PostResp postResp = commonMethodForSaveAndReq(postId);
+        postResp.setIsSaved(!postResp.getIsSaved());
+        postRespRepo.save(postResp);
+        return ApiResponse.getSuccessResponse();
+    }
+
+    private PostResp commonMethodForSaveAndReq(Long postId) throws Exception {
+        AppUser appUser = Utility.getApplicationUserFromAuthentication(appUserRepo);
+        Post post = postRepo.findByIdAndAppUserNot(postId, appUser).orElseThrow(() -> new Exception(appMessage.getMessage("cannot.save.own.posts")));
+        PostResp postResp = postRespRepo.findByPostAndAppUser(post, appUser).orElse(new PostResp());
+        postResp.setPost(post);
+        postResp.setAppUser(appUser);
+        return postResp;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public ApiResponse sendReqToPost(Long postId) throws Exception {
+        PostResp postResp = commonMethodForSaveAndReq(postId);
+        if (!postResp.getReqStatus().equals(PostRequest.NOT_YET_SENT)) {
+            throw new Exception(appMessage.getMessage("req.already.sent"));
+        }
+        postResp.setReqStatus(PostRequest.SENT);
+        postRespRepo.save(postResp);
+        return ApiResponse.getSuccessResponse();
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public ApiResponse reportPost(Long postId) throws Exception {
+        AppUser appUser = Utility.getApplicationUserFromAuthentication(appUserRepo);
+        Post post = postRepo.findByIdAndAppUserNot(postId, appUser).orElseThrow(() -> new Exception(appMessage.getMessage("cannot.report.to.own.post")));
+        Optional<PostReport> optionalPostReport = postReportRepo.findByPostAndAppUser(post, appUser);
+        if (!optionalPostReport.isPresent()) {
+            PostReport postReport = new PostReport(post, appUser);
+            postReportRepo.save(postReport);
+        }
+        return ApiResponse.getSuccessResponse();
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public ApiResponse deletehisOwnPost(Long postId) throws Exception {
+        AppUser appUser = Utility.getApplicationUserFromAuthentication(appUserRepo);
+        Post post = postRepo.findByIdAndAppUser(postId, appUser).orElseThrow(() -> new Exception(appMessage.getMessage("cannot.delete.others.post")));
+        post.setIsActive(Boolean.FALSE);
+        postRepo.save(post);
         return ApiResponse.getSuccessResponse();
     }
 }

@@ -2,6 +2,7 @@ package com.idea.buzzcolony.repo.client;
 
 import com.idea.buzzcolony.model.base.AppUser;
 import com.idea.buzzcolony.model.client.Post;
+import com.idea.buzzcolony.model.client.PostReport;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -10,12 +11,11 @@ import java.util.Optional;
 /**
  * @author Anand Ramesh
  * @version 1.0
- * @since 19/12/20
+ * @since 25/04/21
  */
 @Repository
-public interface PostRepo extends JpaRepository<Post, Long> {
+public interface PostReportRepo extends JpaRepository<PostReport, Long> {
 
-    Optional<Post> findByIdAndAppUser(Long id, AppUser appUser);
+    Optional<PostReport> findByPostAndAppUser(Post post, AppUser appUser);
 
-    Optional<Post> findByIdAndAppUserNot(Long postId, AppUser appUser);
 }

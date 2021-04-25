@@ -29,7 +29,7 @@ public class PostResp extends BaseEntity {
     private PostRequest reqStatus = PostRequest.NOT_YET_SENT;
 
     @ManyToOne
-    private AppUser appUser;
+    private AppUser appUser;            //  Person who has responded to post
 
     @ManyToOne
     private Post post;

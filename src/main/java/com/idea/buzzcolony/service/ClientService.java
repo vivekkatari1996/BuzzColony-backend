@@ -37,4 +37,12 @@ public interface ClientService {
     ApiResponse makeUserInActive() throws Exception;
 
     ApiResponse updateProfileDetails(SignUpDto signUpDto) throws Exception;
+
+    ApiResponse saveOrUnsavePost(Long postId) throws Exception;
+
+    ApiResponse sendReqToPost(Long postId) throws Exception;
+
+    ApiResponse reportPost(Long postId) throws Exception;
+
+    ApiResponse deletehisOwnPost(Long postId) throws Exception;
 }

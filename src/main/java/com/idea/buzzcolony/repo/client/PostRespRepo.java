@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author Anand Ramesh
@@ -16,4 +17,6 @@ import java.util.List;
 @Repository
 public interface PostRespRepo extends JpaRepository<PostResp, Long> {
     List<PostResp> findByPostInAndAppUser(List<Post> posts, AppUser appUser);
+
+    Optional<PostResp> findByPostAndAppUser(Post post, AppUser appUser);
 }

@@ -99,4 +99,28 @@ public class ClientController {
         ApiResponse apiResponse = clientService.makeUserInActive();
         return new ResponseEntity<>(apiResponse, apiResponse.getStatus());
     }
+
+    @PostMapping("save-unsave-post")
+    public ResponseEntity<ApiResponse> saveOrUnsavePost(@RequestParam Long postId) throws Exception {
+        ApiResponse apiResponse = clientService.saveOrUnsavePost(postId);
+        return new ResponseEntity<>(apiResponse, apiResponse.getStatus());
+    }
+
+    @PostMapping("send-req-post")
+    public ResponseEntity<ApiResponse> sendReqToPost(@RequestParam Long postId) throws Exception {
+        ApiResponse apiResponse = clientService.sendReqToPost(postId);
+        return new ResponseEntity<>(apiResponse, apiResponse.getStatus());
+    }
+
+    @PostMapping("report-post")
+    public ResponseEntity<ApiResponse> reportPost(@RequestParam Long postId) throws Exception {
+        ApiResponse apiResponse = clientService.reportPost(postId);
+        return new ResponseEntity<>(apiResponse, apiResponse.getStatus());
+    }
+
+    @DeleteMapping("delete-post")
+    public ResponseEntity<ApiResponse> deletehisOwnPost(@RequestParam Long postId) throws Exception {
+        ApiResponse apiResponse = clientService.deletehisOwnPost(postId);
+        return new ResponseEntity<>(apiResponse, apiResponse.getStatus());
+    }
 }

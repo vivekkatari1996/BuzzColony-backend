@@ -66,9 +66,13 @@ public class PostDto {
 
     private Boolean isOwnPosts = Boolean.FALSE;
 
-    private String name;
+    private String firstName;
+
+    private String lastName;
 
     private String profilePicUrl;
+
+    private Long postUserId;
 
     public PostDto(Post post, String videoUrl, Boolean isFullDetails) {
         if (isFullDetails) {
@@ -87,9 +91,9 @@ public class PostDto {
         this.title = post.getTitle();
         this.description = post.getDescription();
         this.videoUrl = videoUrl;
-        String name = post.getAppUser().getFirstName();
-        name += post.getAppUser().getLastName() != null ? post.getAppUser().getLastName() : "";
-        this.name = name;
+        this.firstName = post.getAppUser().getFirstName();
+        this.lastName = post.getAppUser().getLastName();
+        this.postUserId = post.getAppUser().getId();
     }
 
     public PostDto(Post post, String videoUrl, Boolean isFullDetails, Optional<PostResp> optionalPostResp) {
