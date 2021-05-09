@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 
 /**
  * @author Anand Ramesh
@@ -21,8 +22,8 @@ import javax.persistence.*;
 @NoArgsConstructor
 public class PostResp extends BaseEntity {
 
-    @Column(columnDefinition = "boolean default true")
-    private Boolean isSaved = Boolean.TRUE;
+    @Column(columnDefinition = "boolean default false")
+    private Boolean isSaved = Boolean.FALSE;
 
     @Enumerated(EnumType.STRING)
     @Column(columnDefinition = "character varying(255) default 'NOT_YET_SENT'", nullable = false)
@@ -33,4 +34,12 @@ public class PostResp extends BaseEntity {
 
     @ManyToOne
     private Post post;
+
+    private LocalDateTime reqSentAt;
+
+    private LocalDateTime savedAt;
+
+    private LocalDateTime acceptedAt;
+
+    private LocalDateTime rejectedAt;
 }

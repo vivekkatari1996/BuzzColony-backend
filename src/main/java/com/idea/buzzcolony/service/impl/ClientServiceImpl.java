@@ -1,5 +1,6 @@
 package com.idea.buzzcolony.service.impl;
 
+import com.idea.buzzcolony.dto.client.CreatePostRespDto;
 import com.idea.buzzcolony.dto.client.PostAddressDto;
 import com.idea.buzzcolony.dto.client.PostDto;
 import com.idea.buzzcolony.dto.login.SignUpDto;
@@ -34,6 +35,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -43,11 +45,9 @@ import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -106,12 +106,15 @@ public class ClientServiceImpl implements ClientService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public ApiResponse saveOrUpdatePost(PostDto postDto) throws Exception {
+        if (postDto.getVideoDto() == null || postDto.getVideoDto().getSize() == null) {
+            throw new Exception(appMessage.getMessage("data.not.found"));
+        }
         AppUser appUser = Utility.getApplicationUserFromAuthentication(appUserRepo);
-        Long id = createPost(postDto, appUser);
-        return new ApiResponse(HttpStatus.OK, appMessage.getMessage("success"), id);
+        CreatePostRespDto createPostRespDto = createPost(postDto, appUser);
+        return new ApiResponse(HttpStatus.OK, appMessage.getMessage("success"), createPostRespDto);
     }
 
-    private Long createPost(PostDto postDto, AppUser appUser) throws Exception {
+    private CreatePostRespDto createPost(PostDto postDto, AppUser appUser) throws Exception {
         Post post = postRepo.findByIdAndAppUser(postDto.getId(), appUser).orElse(new Post());
         MtSubBtype mtSubBtype = mtSubBtypeRepo.findById(postDto.getMtSubBTypeId()).orElseThrow(() -> new Exception(appMessage.getMessage("data.not.found")));
         MtEstAmount mtEstAmount = mtEstAmountRepo.findById(postDto.getMtEstAmountId()).orElseThrow(() -> new Exception(appMessage.getMessage("data.not.found")));
@@ -129,7 +132,8 @@ public class ClientServiceImpl implements ClientService {
         post.setMtEstAmount(mtEstAmount);
         post.setMtEstPart(mtEstPart);
         post = postRepo.save(post);
-        return post.getId();
+        String uploadLink = createVideo(appUser, postDto.getVideoDto(), post);
+        return new CreatePostRespDto(post.getId(), uploadLink);
     }
 
     private PostAddress convertPostAddressDtoToEntity(PostAddressDto postAddressDto, Post post) throws Exception {
@@ -146,6 +150,24 @@ public class ClientServiceImpl implements ClientService {
         postAddress.setTown(postAddress.getTown());
         postAddress.setMtCountry(mtCountry);
         return postAddress;
+    }
+
+    private String createVideo(AppUser appUser, FileDto fileDto, Post post) throws Exception {
+        Optional<FileEntity> optionalFileEntity = fileEntityRepo.findByRefIdAndFileType(post.getId(), FileType.POST);
+        if (optionalFileEntity.isPresent()) {
+            vimeoService.delete(optionalFileEntity.get().getUuid());
+            fileEntityRepo.deleteByIdManual(optionalFileEntity.get().getUuid());
+        }
+        VimeoRespDto vimeoRespDto = vimeoService.resumableUpload(fileDto);
+        FileEntity fileEntity = new FileEntity();
+        fileEntity.setUuid(vimeoRespDto.getEndPoint());
+        fileEntity.setFileType(FileType.POST);
+        fileEntity.setName(fileDto.getName());
+        fileEntity.setRefId(post.getId());
+        fileEntity.setSize(fileDto.getSize());
+        fileEntity.setType(fileDto.getType());
+        fileEntityRepo.save(fileEntity);
+        return vimeoRespDto.getUploadLink();
     }
 
     @Override
@@ -217,20 +239,30 @@ public class ClientServiceImpl implements ClientService {
         ApiResponse apiResponse = ApiResponse.getFailureResponse();
         AppUser appUser = Utility.getApplicationUserFromAuthentication(appUserRepo);
         Page<Post> posts = getPostsUsingCriteriaBuilder(postDto, appUser);
-        List<FileEntity> videos = fileEntityRepo.findByRefIdInAndFileType(posts.getContent().stream().map(BaseEntity::getId).collect(Collectors.toList()), FileType.POST);
-        if (posts.getContent().size() != videos.size()) {
-            throw new Exception(appMessage.getMessage("data.not.found"));
-        }
-        List<PostResp> postResps = postRespRepo.findByPostInAndAppUser(posts.getContent(), appUser);
-        List<Long> appUserIds = posts.getContent().stream().map(i -> i.getAppUser().getId()).collect(Collectors.toList());
-        List<FileEntity> profilePics = fileEntityRepo.findByRefIdInAndFileType(appUserIds, FileType.PROFILE_PIC);
-        List<PostDto> postDtos = posts.getContent().stream().map(post -> new PostDto(post,
-                videos.stream().filter(i -> i.getRefId().longValue() == post.getId().longValue()).findFirst().get().getUuid(), Boolean.FALSE,
-                postResps.stream().filter(i -> i.getPost().getId().longValue() == post.getId().longValue()).findFirst(), profilePics, s3Service)).collect(Collectors.toList());
+        List<PostDto> postDtos = getPostDtos(posts.getContent(), appUser, null);
         apiResponse.setStatus(HttpStatus.OK);
         apiResponse.setMessage(appMessage.getMessage("success"));
         apiResponse.setData(new PageImpl<>(postDtos, posts.getPageable(), posts.getTotalElements()));
         return apiResponse;
+    }
+
+    private List<PostDto> getPostDtos(List<Post> posts, AppUser appUser, List<PostResp> postRespsDepends) throws Exception {
+        List<FileEntity> videos = fileEntityRepo.findByRefIdInAndFileType(posts.stream().map(BaseEntity::getId).collect(Collectors.toList()), FileType.POST);
+        if (posts.size() != videos.size()) {
+            throw new Exception(appMessage.getMessage("data.not.found"));
+        }
+        List<PostResp> postResps;
+        if (postRespsDepends == null) {
+            postResps = postRespRepo.findByPostInAndAppUser(posts, appUser);
+        } else {
+            postResps = postRespsDepends;
+        }
+        List<Long> appUserIds = posts.stream().map(i -> i.getAppUser().getId()).collect(Collectors.toList());
+        List<FileEntity> profilePics = fileEntityRepo.findByRefIdInAndFileType(appUserIds, FileType.PROFILE_PIC);
+        List<PostDto> postDtos = posts.stream().map(post -> new PostDto(post,
+                videos.stream().filter(i -> i.getRefId().longValue() == post.getId().longValue()).findFirst().get().getUuid(), Boolean.FALSE,
+                postResps.stream().filter(i -> i.getPost().getId().longValue() == post.getId().longValue()).findFirst(), profilePics, s3Service)).collect(Collectors.toList());
+        return postDtos;
     }
 
     public Page<Post> getPostsUsingCriteriaBuilder(PostDto postDto, AppUser loggedInUser) {
@@ -326,9 +358,12 @@ public class ClientServiceImpl implements ClientService {
     public ApiResponse getPostDetails(Long id) throws Exception {
         PostDto postDto;
         try {
+            AppUser loggedInUser = Utility.getApplicationUserFromAuthentication(appUserRepo);
             Post post = postRepo.findById(id).orElseThrow(() -> new Exception(appMessage.getMessage("data.not.found")));
             FileEntity video = fileEntityRepo.findByRefIdAndFileType(post.getId(), FileType.POST).orElseThrow(() -> new Exception(appMessage.getMessage("data.not.found")));
-            postDto = new PostDto(post, video.getUuid(), Boolean.TRUE);
+            Optional<PostResp> postResps = postRespRepo.findByPostAndAppUser(post,loggedInUser);
+            Optional<FileEntity> profilePics = fileEntityRepo.findByRefIdAndFileType(post.getAppUser().getId(), FileType.PROFILE_PIC);
+            postDto = new PostDto(post, video.getUuid(), Boolean.TRUE, postResps,profilePics.isPresent() ? Arrays.asList(profilePics.get()) : new ArrayList<>(), s3Service);
         } catch (Exception e) {
             e.printStackTrace();
             throw e;
@@ -408,6 +443,9 @@ public class ClientServiceImpl implements ClientService {
     public ApiResponse saveOrUnsavePost(Long postId) throws Exception {
         PostResp postResp = commonMethodForSaveAndReq(postId);
         postResp.setIsSaved(!postResp.getIsSaved());
+        if (postResp.getIsSaved()) {
+            postResp.setSavedAt(LocalDateTime.now());
+        }
         postRespRepo.save(postResp);
         return ApiResponse.getSuccessResponse();
     }
@@ -429,18 +467,19 @@ public class ClientServiceImpl implements ClientService {
             throw new Exception(appMessage.getMessage("req.already.sent"));
         }
         postResp.setReqStatus(PostRequest.SENT);
+        postResp.setReqSentAt(LocalDateTime.now());
         postRespRepo.save(postResp);
         return ApiResponse.getSuccessResponse();
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ApiResponse reportPost(Long postId) throws Exception {
+    public ApiResponse reportPost(Long postId, String reason) throws Exception {
         AppUser appUser = Utility.getApplicationUserFromAuthentication(appUserRepo);
         Post post = postRepo.findByIdAndAppUserNot(postId, appUser).orElseThrow(() -> new Exception(appMessage.getMessage("cannot.report.to.own.post")));
         Optional<PostReport> optionalPostReport = postReportRepo.findByPostAndAppUser(post, appUser);
         if (!optionalPostReport.isPresent()) {
-            PostReport postReport = new PostReport(post, appUser);
+            PostReport postReport = new PostReport(post, appUser, reason);
             postReportRepo.save(postReport);
         }
         return ApiResponse.getSuccessResponse();
@@ -453,6 +492,58 @@ public class ClientServiceImpl implements ClientService {
         Post post = postRepo.findByIdAndAppUser(postId, appUser).orElseThrow(() -> new Exception(appMessage.getMessage("cannot.delete.others.post")));
         post.setIsActive(Boolean.FALSE);
         postRepo.save(post);
+        return ApiResponse.getSuccessResponse();
+    }
+
+    @Override
+    public ApiResponse getOthersPosts(Long id, Integer page) throws Exception {
+        Pageable pageable = PageRequest.of(page, Constants.PAGE_SIZE);
+        AppUser appUser = appUserRepo.findById(id).orElseThrow(() -> new Exception(appMessage.getMessage("data.not.found")));
+        Page<Post> posts = postRepo.findByAppUser(appUser, pageable);
+        List<PostDto> postDtos = getPostDtos(posts.getContent(), Utility.getApplicationUserFromAuthentication(appUserRepo), null);
+        Page<PostDto> result = new PageImpl<>(postDtos, pageable, posts.getTotalElements());
+        return new ApiResponse(HttpStatus.OK, appMessage.getMessage("success"), result);
+    }
+
+    @Override
+    public ApiResponse getSavedOrRequestedPosts(Integer page, Boolean isSaved) throws Exception {
+        Pageable pageable = PageRequest.of(page, Constants.PAGE_SIZE);
+        AppUser appUser = Utility.getApplicationUserFromAuthentication(appUserRepo);
+        Page<PostResp> postResps;
+        if (isSaved) {
+            postResps = postRespRepo.findByAppUserAndIsSavedTrueOrderBySavedAtDesc(appUser, pageable);
+        } else {
+            postResps = postRespRepo.findByAppUserAndReqStatusOrderByReqSentAtDesc(appUser, PostRequest.ACCEPTED, pageable);
+        }
+        List<PostDto> postDtos = getPostDtos(postResps.getContent().stream().map(PostResp::getPost).collect(Collectors.toList()), Utility.getApplicationUserFromAuthentication(appUserRepo), postResps.getContent());
+        Page<PostDto> result = new PageImpl<>(postDtos, pageable, postResps.getTotalElements());
+        return new ApiResponse(HttpStatus.OK, appMessage.getMessage("success"), result);
+    }
+
+    @Override
+    public ApiResponse getRequestsRecieved(Integer page) throws Exception {
+        Pageable pageable = PageRequest.of(page, Constants.PAGE_SIZE);
+        AppUser appUser = Utility.getApplicationUserFromAuthentication(appUserRepo);
+        Page<PostResp> postResps = postRespRepo.findByPostAppUserAndReqStatusNotOrderByReqSentAtDesc(appUser, PostRequest.NOT_YET_SENT, pageable);
+        List<PostDto> postDtos = postResps.getContent().stream().map(PostDto::new).collect(Collectors.toList());
+        Page<PostDto> result = new PageImpl<>(postDtos, pageable, postResps.getTotalElements());
+        return new ApiResponse(HttpStatus.OK, appMessage.getMessage("success"), result);
+    }
+
+    @Override
+    public ApiResponse acceptOrRejRequests(Long id, PostRequest postRequest) throws Exception {
+        if (!postRequest.equals(PostRequest.ACCEPTED) && !postRequest.equals(PostRequest.REJECTED)) {
+            throw new Exception(appMessage.getMessage("data.not.found"));
+        }
+        AppUser appUser = Utility.getApplicationUserFromAuthentication(appUserRepo);
+        PostResp postResp = postRespRepo.findByIdAndPostAppUserAndReqStatus(id, appUser, PostRequest.SENT).orElseThrow(() -> new Exception(appMessage.getMessage("data.not.found")));
+        postResp.setReqStatus(postRequest);
+        if (postRequest.equals(PostRequest.ACCEPTED)) {
+            postResp.setAcceptedAt(LocalDateTime.now());
+        } else if (postRequest.equals(PostRequest.REJECTED)) {
+            postResp.setRejectedAt(LocalDateTime.now());
+        }
+        postRespRepo.save(postResp);
         return ApiResponse.getSuccessResponse();
     }
 }

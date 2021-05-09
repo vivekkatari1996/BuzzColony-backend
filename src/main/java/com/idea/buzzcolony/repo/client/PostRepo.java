@@ -2,6 +2,8 @@ package com.idea.buzzcolony.repo.client;
 
 import com.idea.buzzcolony.model.base.AppUser;
 import com.idea.buzzcolony.model.client.Post;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -18,4 +20,6 @@ public interface PostRepo extends JpaRepository<Post, Long> {
     Optional<Post> findByIdAndAppUser(Long id, AppUser appUser);
 
     Optional<Post> findByIdAndAppUserNot(Long postId, AppUser appUser);
+
+    Page<Post> findByAppUser(AppUser appUser, Pageable pageable);
 }

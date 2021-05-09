@@ -3,6 +3,7 @@ package com.idea.buzzcolony.controller;
 import com.idea.buzzcolony.dto.client.PostDto;
 import com.idea.buzzcolony.dto.login.SignUpDto;
 import com.idea.buzzcolony.dto.vimeo.FileDto;
+import com.idea.buzzcolony.enums.post.PostRequest;
 import com.idea.buzzcolony.service.ClientService;
 import com.idea.buzzcolony.util.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,7 +53,7 @@ public class ClientController {
         return new ResponseEntity<>(apiResponse, apiResponse.getStatus());
     }
 
-    @PostMapping("upload-video")
+//    @PostMapping("upload-video")
     public ResponseEntity<ApiResponse> uploadVidep(@RequestBody FileDto fileDto) throws Exception {
         ApiResponse apiResponse = clientService.uploadVidep(fileDto);
         return new ResponseEntity<>(apiResponse, apiResponse.getStatus());
@@ -113,14 +114,44 @@ public class ClientController {
     }
 
     @PostMapping("report-post")
-    public ResponseEntity<ApiResponse> reportPost(@RequestParam Long postId) throws Exception {
-        ApiResponse apiResponse = clientService.reportPost(postId);
+    public ResponseEntity<ApiResponse> reportPost(@RequestParam Long postId, @RequestParam String reason) throws Exception {
+        ApiResponse apiResponse = clientService.reportPost(postId, reason);
         return new ResponseEntity<>(apiResponse, apiResponse.getStatus());
     }
 
     @DeleteMapping("delete-post")
     public ResponseEntity<ApiResponse> deletehisOwnPost(@RequestParam Long postId) throws Exception {
         ApiResponse apiResponse = clientService.deletehisOwnPost(postId);
+        return new ResponseEntity<>(apiResponse, apiResponse.getStatus());
+    }
+
+    @GetMapping("others-posts")
+    public ResponseEntity<ApiResponse> getOthersPosts(@RequestParam Long id, @RequestParam(required = false, defaultValue = "0") Integer page) throws Exception {
+        ApiResponse apiResponse = clientService.getOthersPosts(id, page);
+        return new ResponseEntity<>(apiResponse, apiResponse.getStatus());
+    }
+
+    @GetMapping("saved-posts")
+    public ResponseEntity<ApiResponse> getSavedPosts(@RequestParam(required = false, defaultValue = "0") Integer page) throws Exception {
+        ApiResponse apiResponse = clientService.getSavedOrRequestedPosts(page, Boolean.TRUE);
+        return new ResponseEntity<>(apiResponse, apiResponse.getStatus());
+    }
+
+    @GetMapping("requestd-posts")
+    public ResponseEntity<ApiResponse> getRequestedPosts(@RequestParam(required = false, defaultValue = "0") Integer page) throws Exception {
+        ApiResponse apiResponse = clientService.getSavedOrRequestedPosts(page, Boolean.FALSE);
+        return new ResponseEntity<>(apiResponse, apiResponse.getStatus());
+    }
+
+    @GetMapping("requests")
+    public ResponseEntity<ApiResponse> getRequests(@RequestParam(required = false, defaultValue = "0") Integer page) throws Exception {
+        ApiResponse apiResponse = clientService.getRequestsRecieved(page);
+        return new ResponseEntity<>(apiResponse, apiResponse.getStatus());
+    }
+
+    @PostMapping("accpt-rej-requests")
+    public ResponseEntity<ApiResponse> acceptOrRejRequests(@RequestParam Long id, @RequestParam PostRequest postRequest) throws Exception {
+        ApiResponse apiResponse = clientService.acceptOrRejRequests(id, postRequest);
         return new ResponseEntity<>(apiResponse, apiResponse.getStatus());
     }
 }

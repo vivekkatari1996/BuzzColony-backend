@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 
@@ -26,8 +27,12 @@ public class PostReport extends BaseEntity {
     @ManyToOne
     private AppUser appUser;    //  person who has reported
 
-    public PostReport(Post post, AppUser appUser) {
+    @Column(columnDefinition = "TEXT")
+    private String reason;
+
+    public PostReport(Post post, AppUser appUser, String reason) {
         this.post = post;
         this.appUser = appUser;
+        this.reason = reason;
     }
 }

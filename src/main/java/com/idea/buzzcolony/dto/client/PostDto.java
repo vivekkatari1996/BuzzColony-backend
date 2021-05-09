@@ -1,7 +1,9 @@
 package com.idea.buzzcolony.dto.client;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.idea.buzzcolony.dto.vimeo.FileDto;
 import com.idea.buzzcolony.enums.post.PostRequest;
+import com.idea.buzzcolony.model.base.AppUser;
 import com.idea.buzzcolony.model.base.FileEntity;
 import com.idea.buzzcolony.model.client.Post;
 import com.idea.buzzcolony.model.client.PostResp;
@@ -62,7 +64,7 @@ public class PostDto {
 
     private Boolean isSaved = Boolean.FALSE;
 
-    private String requestStatus = PostRequest.NOT_YET_SENT.name();
+    private String reqStatus = PostRequest.NOT_YET_SENT.name();
 
     private Boolean isOwnPosts = Boolean.FALSE;
 
@@ -74,7 +76,9 @@ public class PostDto {
 
     private Long postUserId;
 
-    public PostDto(Post post, String videoUrl, Boolean isFullDetails) {
+    private FileDto videoDto;
+
+    public PostDto(Post post, String videoUrl, Boolean isFullDetails, Optional<PostResp> optionalPostResp, List<FileEntity> profilePics, S3Service s3Service) {
         if (isFullDetails) {
             this.acceptedPartners = post.getAcceptedPrs();
             this.isPhNoHidden = post.getIsPhNoHidden();
@@ -94,21 +98,21 @@ public class PostDto {
         this.firstName = post.getAppUser().getFirstName();
         this.lastName = post.getAppUser().getLastName();
         this.postUserId = post.getAppUser().getId();
-    }
-
-    public PostDto(Post post, String videoUrl, Boolean isFullDetails, Optional<PostResp> optionalPostResp) {
-        this(post, videoUrl, isFullDetails);
         if (optionalPostResp.isPresent()) {
             this.isSaved = optionalPostResp.get().getIsSaved();
-            this.requestStatus = optionalPostResp.get().getReqStatus().name();
+            this.reqStatus = optionalPostResp.get().getReqStatus().name();
         }
+        Optional<FileEntity> profilePic = profilePics.stream().filter(i -> i.getRefId().longValue() == post.getAppUser().getId().longValue()).findFirst();
+        profilePic.ifPresent(fileEntity -> this.profilePicUrl = s3Service.getPreSignedUrlForDownload(fileEntity.getUuid()));
     }
 
-    public PostDto(Post post, String videoUrl, Boolean isFullDetails, Optional<PostResp> optionalPostResp, List<FileEntity> profilePics, S3Service s3Service) {
-        this(post, videoUrl, isFullDetails, optionalPostResp);
-        Optional<FileEntity> profilePic = profilePics.stream().filter(i -> i.getRefId().longValue() == post.getAppUser().getId().longValue()).findFirst();
-        if (profilePic.isPresent()) {
-            this.profilePicUrl = s3Service.getPreSignedUrlForDownload(profilePic.get().getUuid());
-        }
+    public PostDto(PostResp postResp) {
+        Post post = postResp.getPost();
+        AppUser appUser = postResp.getAppUser();
+        this.id = postResp.getId();
+        this.title = post.getTitle();
+        this.firstName = appUser.getFirstName();
+        this.lastName = appUser.getLastName();
+        this.reqStatus = postResp.getReqStatus().name();
     }
 }

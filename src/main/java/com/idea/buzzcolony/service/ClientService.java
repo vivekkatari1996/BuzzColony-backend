@@ -3,6 +3,7 @@ package com.idea.buzzcolony.service;
 import com.idea.buzzcolony.dto.client.PostDto;
 import com.idea.buzzcolony.dto.login.SignUpDto;
 import com.idea.buzzcolony.dto.vimeo.FileDto;
+import com.idea.buzzcolony.enums.post.PostRequest;
 import com.idea.buzzcolony.util.ApiResponse;
 
 /**
@@ -42,7 +43,15 @@ public interface ClientService {
 
     ApiResponse sendReqToPost(Long postId) throws Exception;
 
-    ApiResponse reportPost(Long postId) throws Exception;
+    ApiResponse reportPost(Long postId, String reason) throws Exception;
 
     ApiResponse deletehisOwnPost(Long postId) throws Exception;
+
+    ApiResponse getOthersPosts(Long id, Integer page) throws Exception;
+
+    ApiResponse getSavedOrRequestedPosts(Integer page, Boolean isSaved) throws Exception;
+
+    ApiResponse getRequestsRecieved(Integer page) throws Exception;
+
+    ApiResponse acceptOrRejRequests(Long id, PostRequest postRequest) throws Exception;
 }
