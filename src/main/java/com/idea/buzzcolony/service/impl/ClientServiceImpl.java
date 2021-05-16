@@ -536,7 +536,7 @@ public class ClientServiceImpl implements ClientService {
             throw new Exception(appMessage.getMessage("data.not.found"));
         }
         AppUser appUser = Utility.getApplicationUserFromAuthentication(appUserRepo);
-        PostResp postResp = postRespRepo.findByIdAndPostAppUserAndReqStatus(id, appUser, PostRequest.SENT).orElseThrow(() -> new Exception(appMessage.getMessage("data.not.found")));
+        PostResp postResp = postRespRepo.findByIdAndPostAppUserAndReqStatusNot(id, appUser, PostRequest.NOT_YET_SENT).orElseThrow(() -> new Exception(appMessage.getMessage("data.not.found")));
         postResp.setReqStatus(postRequest);
         if (postRequest.equals(PostRequest.ACCEPTED)) {
             postResp.setAcceptedAt(LocalDateTime.now());

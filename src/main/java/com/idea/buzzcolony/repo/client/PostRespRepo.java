@@ -29,5 +29,5 @@ public interface PostRespRepo extends JpaRepository<PostResp, Long> {
 
     Page<PostResp> findByPostAppUserAndReqStatusNotOrderByReqSentAtDesc(AppUser appUser, PostRequest notYetSent, Pageable pageable);
 
-    Optional<PostResp> findByIdAndPostAppUserAndReqStatus(Long id, AppUser appUser, PostRequest request);
+    Optional<PostResp> findByIdAndPostAppUserAndReqStatusNot(Long id, AppUser appUser, PostRequest request);
 }

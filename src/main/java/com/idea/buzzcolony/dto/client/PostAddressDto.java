@@ -30,6 +30,8 @@ public class PostAddressDto {
 
     private Long mtCountryId;
 
+    private String countryName;
+
     public PostAddressDto(PostAddress postAddress) {
         this.id = postAddress.getId();
         this.state = postAddress.getState();
@@ -37,5 +39,6 @@ public class PostAddressDto {
         this.district = postAddress.getDistrict();
         this.town = postAddress.getTown();
         this.mtCountryId = postAddress.getMtCountry().getId();
+        this.countryName = postAddress.getMtCountry().getName();
     }
 }

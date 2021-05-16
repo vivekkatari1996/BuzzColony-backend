@@ -18,4 +18,6 @@ public class LoginDto {
     private String token;
 
     private String email;
+
+    private String profilePicUrl;
 }

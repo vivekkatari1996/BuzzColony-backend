@@ -23,7 +23,7 @@ import java.util.Optional;
 @Getter
 @Setter
 @NoArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_NULL)
+//@JsonInclude(JsonInclude.Include.NON_NULL)
 public class PostDto {
 
     private Long id;
@@ -78,6 +78,14 @@ public class PostDto {
 
     private FileDto videoDto;
 
+    private String categoryName;
+
+    private String bTypeName;
+
+    private String estPartName;
+
+    private String estAmountName;
+
     public PostDto(Post post, String videoUrl, Boolean isFullDetails, Optional<PostResp> optionalPostResp, List<FileEntity> profilePics, S3Service s3Service) {
         if (isFullDetails) {
             this.acceptedPartners = post.getAcceptedPrs();
@@ -90,6 +98,10 @@ public class PostDto {
             this.mtCategoryId = post.getMtCategory().getId();
             this.mtEstAmountId = post.getMtEstAmount().getId();
             this.mtEstPartId = post.getMtEstPart().getId();
+            this.categoryName = post.getMtCategory().getName();
+            this.estAmountName = post.getMtEstAmount().getName();
+            this.estPartName = post.getMtEstPart().getName();
+            this.bTypeName = post.getMtSubBtype().getName();
         }
         this.id = post.getId();
         this.title = post.getTitle();
@@ -114,5 +126,6 @@ public class PostDto {
         this.firstName = appUser.getFirstName();
         this.lastName = appUser.getLastName();
         this.reqStatus = postResp.getReqStatus().name();
+        this.postUserId = appUser.getId();
     }
 }

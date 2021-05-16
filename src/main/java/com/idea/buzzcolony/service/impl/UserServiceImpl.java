@@ -9,13 +9,17 @@ import com.idea.buzzcolony.dto.login.ForgetPassDto;
 import com.idea.buzzcolony.dto.login.LoginDto;
 import com.idea.buzzcolony.dto.login.SignUpDto;
 import com.idea.buzzcolony.dto.master.MtCountryDto;
+import com.idea.buzzcolony.enums.base.FileType;
 import com.idea.buzzcolony.enums.base.TokenType;
 import com.idea.buzzcolony.model.base.AppUser;
+import com.idea.buzzcolony.model.base.FileEntity;
 import com.idea.buzzcolony.model.base.TokenStore;
 import com.idea.buzzcolony.model.master.MtCountry;
 import com.idea.buzzcolony.repo.AppUserRepo;
+import com.idea.buzzcolony.repo.FileEntityRepo;
 import com.idea.buzzcolony.repo.TokenStoreRepo;
 import com.idea.buzzcolony.repo.master.MtCountryRepo;
+import com.idea.buzzcolony.service.S3Service;
 import com.idea.buzzcolony.service.UserService;
 import com.idea.buzzcolony.util.ApiResponse;
 import com.idea.buzzcolony.util.AppMessage;
@@ -47,6 +51,12 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private TokenStoreRepo tokenStoreRepo;
+
+    @Autowired
+    private FileEntityRepo fileEntityRepo;
+
+    @Autowired
+    private S3Service s3Service;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -83,6 +93,10 @@ public class UserServiceImpl implements UserService {
         loginDto.setUserId(optionalAppUser.get().getUserId());
         loginDto.setEmail(optionalAppUser.get().getEmail());
         loginDto.setToken(Utility.createToken(optionalAppUser.get().getEmail(), Constants.JWT_VALIDITY));
+        Optional<FileEntity> profilePic = fileEntityRepo.findByRefIdAndFileType(optionalAppUser.get().getId(), FileType.PROFILE_PIC);
+        if (profilePic.isPresent()) {
+            loginDto.setProfilePicUrl(s3Service.getPreSignedUrlForDownload(profilePic.get().getUuid()));
+        }
         return new ApiResponse(HttpStatus.OK, appMessage.getMessage("success"), loginDto);
     }
 
