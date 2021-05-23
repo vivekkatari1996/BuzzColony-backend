@@ -34,7 +34,7 @@ public interface PostRespRepo extends JpaRepository<PostResp, Long> {
 
     Optional<PostResp> findByIdAndPostAppUserAndReqStatusNot(Long id, AppUser appUser, PostRequest request);
 
-    @Query(nativeQuery = true, value = "SELECT DISTINCT b.*\n" +
+    @Query(nativeQuery = true, value = "SELECT DISTINCT b.id\n" +
             "FROM            post_resp a\n" +
             "LEFT JOIN       app_user b\n" +
             "ON              a.app_user_id=b.id\n" +
@@ -42,17 +42,28 @@ public interface PostRespRepo extends JpaRepository<PostResp, Long> {
             "ON              c.id=a.post_id\n" +
             "WHERE           c.app_user_id=?1\n" +
             "AND             a.req_status=?2 limit ?3 offset ?4")
-    List<AppUser> findByPostAppUserAndReqStatus(Long loggedInUSerId, String reqStatus, Integer limit, Integer offSet);
+    List<Long> findByPostAppUserAndReqStatus(Long loggedInUSerId, String reqStatus, Integer limit, Integer offSet);
 
     @Transactional
     @Modifying
     @Query(nativeQuery = true, value = "UPDATE post_resp\n" +
-            "SET       req_status=?1\n" +
-            "FROM      post_resp a\n" +
-            "LEFT JOIN post b\n" +
-            "ON        a.post_id=b.id\n" +
-            "WHERE     a.app_user_id=?2\n" +
-            "AND       a.req_status=?3\n" +
-            "AND       b.app_user_id=?4")
+            "            SET       req_status=?1\n" +
+            "\t\t\twhere id in \n" +
+            "\t\t\t(select a.id FROM      post_resp a\n" +
+            "            LEFT JOIN post b\n" +
+            "            ON        a.post_id=b.id\n" +
+            "            WHERE     a.app_user_id=?2\n" +
+            "            AND       a.req_status=?3\n" +
+            "            AND       b.app_user_id=?4)")
     void updatePostRespRequestStatusToRejected(String reqStatusRejected, Long appUserId, String accepted, Long loggedInUSerId);
+
+    @Query(nativeQuery = true, value = "select count(*) from (SELECT DISTINCT b.id\n" +
+            "            FROM            post_resp a\n" +
+            "            LEFT JOIN       app_user b\n" +
+            "            ON              a.app_user_id=b.id\n" +
+            "            LEFT JOIN       post c\n" +
+            "            ON              c.id=a.post_id\n" +
+            "            WHERE           c.app_user_id=?1\n" +
+            "            AND             a.req_status=?2) as id")
+    Long countOfInsiders(Long id, String name);
 }

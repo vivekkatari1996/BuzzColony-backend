@@ -551,10 +551,12 @@ public class ClientServiceImpl implements ClientService {
     @Override
     public ApiResponse getInsiders(Integer page) throws Exception {
         AppUser appUser = Utility.getApplicationUserFromAuthentication(appUserRepo);
-        List<AppUser> appUsers = postRespRepo.findByPostAppUserAndReqStatus(appUser.getId(), PostRequest.ACCEPTED.name(), Constants.PAGE_SIZE, page*Constants.PAGE_SIZE);
+        List<Long> appUsersIds = postRespRepo.findByPostAppUserAndReqStatus(appUser.getId(), PostRequest.ACCEPTED.name(), Constants.PAGE_SIZE, page*Constants.PAGE_SIZE);
+        Long count = postRespRepo.countOfInsiders(appUser.getId(), PostRequest.ACCEPTED.name());
+        List<AppUser> appUsers = appUserRepo.findAllById(appUsersIds);
         List<FileEntity> profilePics = fileEntityRepo.findByRefIdInAndFileType(appUsers.stream().map(i -> i.getId()).collect(Collectors.toList()), FileType.PROFILE_PIC);
         List<InsiderDto> insiderDtos = appUsers.stream().map(i -> new InsiderDto(i, profilePics, s3Service)).collect(Collectors.toList());
-        return new ApiResponse(HttpStatus.OK, appMessage.getMessage("success"), insiderDtos);
+        return new ApiResponse(HttpStatus.OK, appMessage.getMessage("success"), new PageImpl<>(insiderDtos, PageRequest.of(page, Constants.PAGE_SIZE), count));
     }
 
     @Override
