@@ -154,4 +154,10 @@ public class ClientController {
         ApiResponse apiResponse = clientService.acceptOrRejRequests(id, postRequest);
         return new ResponseEntity<>(apiResponse, apiResponse.getStatus());
     }
+
+    @GetMapping("insiders")
+    public ResponseEntity<ApiResponse> getInsiders(@RequestParam(required = false, defaultValue = "0") Integer page) throws Exception {
+        ApiResponse apiResponse = clientService.getInsiders(page);
+        return new ResponseEntity<>(apiResponse, apiResponse.getStatus());
+    }
 }

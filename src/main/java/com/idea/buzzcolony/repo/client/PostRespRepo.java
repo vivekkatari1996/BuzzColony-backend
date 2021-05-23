@@ -7,6 +7,7 @@ import com.idea.buzzcolony.model.client.PostResp;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -30,4 +31,14 @@ public interface PostRespRepo extends JpaRepository<PostResp, Long> {
     Page<PostResp> findByPostAppUserAndReqStatusNotOrderByReqSentAtDesc(AppUser appUser, PostRequest notYetSent, Pageable pageable);
 
     Optional<PostResp> findByIdAndPostAppUserAndReqStatusNot(Long id, AppUser appUser, PostRequest request);
+
+    @Query(nativeQuery = true, value = "SELECT DISTINCT b.*\n" +
+            "FROM            post_resp a\n" +
+            "LEFT JOIN       app_user b\n" +
+            "ON              a.app_user_id=b.id\n" +
+            "LEFT JOIN       post c\n" +
+            "ON              c.id=a.post_id\n" +
+            "WHERE           c.app_user_id=?1\n" +
+            "AND             a.req_status=?2 limit ?3 offset ?4")
+    List<AppUser> findByPostAppUserAndReqStatus(Long loggedInUSerId, String reqStatus, Integer limit, Integer offSet);
 }

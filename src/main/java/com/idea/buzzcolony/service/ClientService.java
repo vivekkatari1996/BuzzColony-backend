@@ -54,4 +54,6 @@ public interface ClientService {
     ApiResponse getRequestsRecieved(Integer page) throws Exception;
 
     ApiResponse acceptOrRejRequests(Long id, PostRequest postRequest) throws Exception;
+
+    ApiResponse getInsiders(Integer page) throws Exception;
 }

@@ -1,6 +1,7 @@
 package com.idea.buzzcolony.service.impl;
 
 import com.idea.buzzcolony.dto.client.CreatePostRespDto;
+import com.idea.buzzcolony.dto.client.InsiderDto;
 import com.idea.buzzcolony.dto.client.PostAddressDto;
 import com.idea.buzzcolony.dto.client.PostDto;
 import com.idea.buzzcolony.dto.login.SignUpDto;
@@ -545,5 +546,14 @@ public class ClientServiceImpl implements ClientService {
         }
         postRespRepo.save(postResp);
         return ApiResponse.getSuccessResponse();
+    }
+
+    @Override
+    public ApiResponse getInsiders(Integer page) throws Exception {
+        AppUser appUser = Utility.getApplicationUserFromAuthentication(appUserRepo);
+        List<AppUser> appUsers = postRespRepo.findByPostAppUserAndReqStatus(appUser.getId(), PostRequest.ACCEPTED.name(), Constants.PAGE_SIZE, page*Constants.PAGE_SIZE);
+        List<FileEntity> profilePics = fileEntityRepo.findByRefIdInAndFileType(appUsers.stream().map(i -> i.getId()).collect(Collectors.toList()), FileType.PROFILE_PIC);
+        List<InsiderDto> insiderDtos = appUsers.stream().map(i -> new InsiderDto(i, profilePics, s3Service)).collect(Collectors.toList());
+        return new ApiResponse(HttpStatus.OK, appMessage.getMessage("success"), insiderDtos);
     }
 }
