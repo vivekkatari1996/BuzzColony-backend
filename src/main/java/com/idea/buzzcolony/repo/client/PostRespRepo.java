@@ -7,8 +7,10 @@ import com.idea.buzzcolony.model.client.PostResp;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -41,4 +43,16 @@ public interface PostRespRepo extends JpaRepository<PostResp, Long> {
             "WHERE           c.app_user_id=?1\n" +
             "AND             a.req_status=?2 limit ?3 offset ?4")
     List<AppUser> findByPostAppUserAndReqStatus(Long loggedInUSerId, String reqStatus, Integer limit, Integer offSet);
+
+    @Transactional
+    @Modifying
+    @Query(nativeQuery = true, value = "UPDATE post_resp\n" +
+            "SET       req_status=?1\n" +
+            "FROM      post_resp a\n" +
+            "LEFT JOIN post b\n" +
+            "ON        a.post_id=b.id\n" +
+            "WHERE     a.app_user_id=?2\n" +
+            "AND       a.req_status=?3\n" +
+            "AND       b.app_user_id=?4")
+    void updatePostRespRequestStatusToRejected(String reqStatusRejected, Long appUserId, String accepted, Long loggedInUSerId);
 }

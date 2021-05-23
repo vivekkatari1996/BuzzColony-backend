@@ -556,4 +556,13 @@ public class ClientServiceImpl implements ClientService {
         List<InsiderDto> insiderDtos = appUsers.stream().map(i -> new InsiderDto(i, profilePics, s3Service)).collect(Collectors.toList());
         return new ApiResponse(HttpStatus.OK, appMessage.getMessage("success"), insiderDtos);
     }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public ApiResponse unknown(Long id) throws Exception {
+        AppUser loggedInUSer = Utility.getApplicationUserFromAuthentication(appUserRepo);
+        AppUser appUser = appUserRepo.findById(id).orElseThrow(() -> new Exception(appMessage.getMessage("data.not.found")));
+        postRespRepo.updatePostRespRequestStatusToRejected(PostRequest.REJECTED.name(), appUser.getId(), PostRequest.ACCEPTED.name(), loggedInUSer.getId());
+        return ApiResponse.getSuccessResponse();
+    }
 }

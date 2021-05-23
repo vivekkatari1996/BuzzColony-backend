@@ -160,4 +160,11 @@ public class ClientController {
         ApiResponse apiResponse = clientService.getInsiders(page);
         return new ResponseEntity<>(apiResponse, apiResponse.getStatus());
     }
+
+    @PostMapping("unknown")
+    public ResponseEntity<ApiResponse> unknown(@RequestParam Long id) throws Exception {
+        ApiResponse apiResponse = clientService.unknown(id);
+        return new ResponseEntity<>(apiResponse, apiResponse.getStatus());
+    }
+
 }
