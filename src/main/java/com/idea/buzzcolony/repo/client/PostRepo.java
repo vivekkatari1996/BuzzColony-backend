@@ -17,9 +17,13 @@ import java.util.Optional;
 @Repository
 public interface PostRepo extends JpaRepository<Post, Long> {
 
+    Optional<Post> findByIdAndAppUserAndIsActiveTrue(Long id, AppUser appUser);
+
+    Optional<Post> findByIdAndAppUserNotAndIsActiveTrue(Long postId, AppUser appUser);
+
+    Page<Post> findByAppUserAndIsActiveTrue(AppUser appUser, Pageable pageable);
+
     Optional<Post> findByIdAndAppUser(Long id, AppUser appUser);
 
-    Optional<Post> findByIdAndAppUserNot(Long postId, AppUser appUser);
-
-    Page<Post> findByAppUser(AppUser appUser, Pageable pageable);
+    Optional<Post> findByIdAndIsActiveTrue(Long id);
 }

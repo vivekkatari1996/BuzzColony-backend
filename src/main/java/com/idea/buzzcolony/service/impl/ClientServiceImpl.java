@@ -200,7 +200,7 @@ public class ClientServiceImpl implements ClientService {
     public ApiResponse uploadVidep(FileDto fileDto) throws Exception {
         ApiResponse apiResponse = ApiResponse.getFailureResponse();
         AppUser appUser = Utility.getApplicationUserFromAuthentication(appUserRepo);
-        Post post = postRepo.findByIdAndAppUser(fileDto.getRefId(), appUser).orElseThrow(() -> new Exception(appMessage.getMessage("data.not.found")));
+        Post post = postRepo.findByIdAndAppUserAndIsActiveTrue(fileDto.getRefId(), appUser).orElseThrow(() -> new Exception(appMessage.getMessage("data.not.found")));
         Optional<FileEntity> optionalFileEntity = fileEntityRepo.findByRefIdAndFileType(post.getId(), FileType.POST);
         if (optionalFileEntity.isPresent()) {
             vimeoService.delete(optionalFileEntity.get().getUuid());
@@ -225,7 +225,7 @@ public class ClientServiceImpl implements ClientService {
     public ApiResponse getTransCodeStatus(Long id) throws Exception {
         ApiResponse apiResponse = ApiResponse.getFailureResponse();
         AppUser appUser = Utility.getApplicationUserFromAuthentication(appUserRepo);
-        Post post = postRepo.findByIdAndAppUser(id, appUser).orElseThrow(() -> new Exception(appMessage.getMessage("data.not.found")));
+        Post post = postRepo.findByIdAndAppUserAndIsActiveTrue(id, appUser).orElseThrow(() -> new Exception(appMessage.getMessage("data.not.found")));
         Optional<FileEntity> optionalFileEntity = fileEntityRepo.findByRefIdAndFileType(post.getId(), FileType.POST);
         if (optionalFileEntity.isPresent()) {
             apiResponse.setStatus(HttpStatus.OK);
@@ -349,7 +349,7 @@ public class ClientServiceImpl implements ClientService {
     @Override
     public ApiResponse confirmVideoUpload(Long id) throws Exception {
         AppUser appUser = Utility.getApplicationUserFromAuthentication(appUserRepo);
-        Post post = postRepo.findByIdAndAppUser(id, appUser).orElseThrow(() -> new Exception(appMessage.getMessage("data.not.found")));
+        Post post = postRepo.findByIdAndAppUserAndIsActiveTrue(id, appUser).orElseThrow(() -> new Exception(appMessage.getMessage("data.not.found")));
         post.setStatus(PostStatus.DONE);
         postRepo.save(post);
         return ApiResponse.getSuccessResponse();
@@ -360,7 +360,7 @@ public class ClientServiceImpl implements ClientService {
         PostDto postDto;
         try {
             AppUser loggedInUser = Utility.getApplicationUserFromAuthentication(appUserRepo);
-            Post post = postRepo.findById(id).orElseThrow(() -> new Exception(appMessage.getMessage("data.not.found")));
+            Post post = postRepo.findByIdAndIsActiveTrue(id).orElseThrow(() -> new Exception(appMessage.getMessage("data.not.found")));
             FileEntity video = fileEntityRepo.findByRefIdAndFileType(post.getId(), FileType.POST).orElseThrow(() -> new Exception(appMessage.getMessage("data.not.found")));
             Optional<PostResp> postResps = postRespRepo.findByPostAndAppUser(post,loggedInUser);
             Optional<FileEntity> profilePics = fileEntityRepo.findByRefIdAndFileType(post.getAppUser().getId(), FileType.PROFILE_PIC);
@@ -453,7 +453,7 @@ public class ClientServiceImpl implements ClientService {
 
     private PostResp commonMethodForSaveAndReq(Long postId) throws Exception {
         AppUser appUser = Utility.getApplicationUserFromAuthentication(appUserRepo);
-        Post post = postRepo.findByIdAndAppUserNot(postId, appUser).orElseThrow(() -> new Exception(appMessage.getMessage("cannot.save.own.posts")));
+        Post post = postRepo.findByIdAndAppUserNotAndIsActiveTrue(postId, appUser).orElseThrow(() -> new Exception(appMessage.getMessage("cannot.save.own.posts")));
         PostResp postResp = postRespRepo.findByPostAndAppUser(post, appUser).orElse(new PostResp());
         postResp.setPost(post);
         postResp.setAppUser(appUser);
@@ -477,7 +477,7 @@ public class ClientServiceImpl implements ClientService {
     @Transactional(rollbackFor = Exception.class)
     public ApiResponse reportPost(Long postId, String reason) throws Exception {
         AppUser appUser = Utility.getApplicationUserFromAuthentication(appUserRepo);
-        Post post = postRepo.findByIdAndAppUserNot(postId, appUser).orElseThrow(() -> new Exception(appMessage.getMessage("cannot.report.to.own.post")));
+        Post post = postRepo.findByIdAndAppUserNotAndIsActiveTrue(postId, appUser).orElseThrow(() -> new Exception(appMessage.getMessage("cannot.report.to.own.post")));
         Optional<PostReport> optionalPostReport = postReportRepo.findByPostAndAppUser(post, appUser);
         if (!optionalPostReport.isPresent()) {
             PostReport postReport = new PostReport(post, appUser, reason);
@@ -500,7 +500,7 @@ public class ClientServiceImpl implements ClientService {
     public ApiResponse getOthersPosts(Long id, Integer page) throws Exception {
         Pageable pageable = PageRequest.of(page, Constants.PAGE_SIZE);
         AppUser appUser = appUserRepo.findById(id).orElseThrow(() -> new Exception(appMessage.getMessage("data.not.found")));
-        Page<Post> posts = postRepo.findByAppUser(appUser, pageable);
+        Page<Post> posts = postRepo.findByAppUserAndIsActiveTrue(appUser, pageable);
         List<PostDto> postDtos = getPostDtos(posts.getContent(), Utility.getApplicationUserFromAuthentication(appUserRepo), null);
         Page<PostDto> result = new PageImpl<>(postDtos, pageable, posts.getTotalElements());
         return new ApiResponse(HttpStatus.OK, appMessage.getMessage("success"), result);
@@ -512,9 +512,9 @@ public class ClientServiceImpl implements ClientService {
         AppUser appUser = Utility.getApplicationUserFromAuthentication(appUserRepo);
         Page<PostResp> postResps;
         if (isSaved) {
-            postResps = postRespRepo.findByAppUserAndIsSavedTrueOrderBySavedAtDesc(appUser, pageable);
+            postResps = postRespRepo.findByPostIsActiveTrueAndAppUserAndIsSavedTrueOrderBySavedAtDesc(appUser, pageable);
         } else {
-            postResps = postRespRepo.findByAppUserAndReqStatusOrderByReqSentAtDesc(appUser, PostRequest.ACCEPTED, pageable);
+            postResps = postRespRepo.findByPostIsActiveTrueAndAppUserAndReqStatusOrderByReqSentAtDesc(appUser, PostRequest.ACCEPTED, pageable);
         }
         List<PostDto> postDtos = getPostDtos(postResps.getContent().stream().map(PostResp::getPost).collect(Collectors.toList()), Utility.getApplicationUserFromAuthentication(appUserRepo), postResps.getContent());
         Page<PostDto> result = new PageImpl<>(postDtos, pageable, postResps.getTotalElements());
@@ -525,7 +525,7 @@ public class ClientServiceImpl implements ClientService {
     public ApiResponse getRequestsRecieved(Integer page) throws Exception {
         Pageable pageable = PageRequest.of(page, Constants.PAGE_SIZE);
         AppUser appUser = Utility.getApplicationUserFromAuthentication(appUserRepo);
-        Page<PostResp> postResps = postRespRepo.findByPostAppUserAndReqStatusNotOrderByReqSentAtDesc(appUser, PostRequest.NOT_YET_SENT, pageable);
+        Page<PostResp> postResps = postRespRepo.findByPostIsActiveTrueAndPostAppUserAndReqStatusNotOrderByReqSentAtDesc(appUser, PostRequest.NOT_YET_SENT, pageable);
         List<PostDto> postDtos = postResps.getContent().stream().map(PostDto::new).collect(Collectors.toList());
         Page<PostDto> result = new PageImpl<>(postDtos, pageable, postResps.getTotalElements());
         return new ApiResponse(HttpStatus.OK, appMessage.getMessage("success"), result);
@@ -537,7 +537,7 @@ public class ClientServiceImpl implements ClientService {
             throw new Exception(appMessage.getMessage("data.not.found"));
         }
         AppUser appUser = Utility.getApplicationUserFromAuthentication(appUserRepo);
-        PostResp postResp = postRespRepo.findByIdAndPostAppUserAndReqStatusNot(id, appUser, PostRequest.NOT_YET_SENT).orElseThrow(() -> new Exception(appMessage.getMessage("data.not.found")));
+        PostResp postResp = postRespRepo.findByPostIsActiveTrueAndIdAndPostAppUserAndReqStatusNot(id, appUser, PostRequest.NOT_YET_SENT).orElseThrow(() -> new Exception(appMessage.getMessage("data.not.found")));
         postResp.setReqStatus(postRequest);
         if (postRequest.equals(PostRequest.ACCEPTED)) {
             postResp.setAcceptedAt(LocalDateTime.now());

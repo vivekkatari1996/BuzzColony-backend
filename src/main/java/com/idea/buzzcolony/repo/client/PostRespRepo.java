@@ -26,13 +26,13 @@ public interface PostRespRepo extends JpaRepository<PostResp, Long> {
 
     Optional<PostResp> findByPostAndAppUser(Post post, AppUser appUser);
 
-    Page<PostResp> findByAppUserAndIsSavedTrueOrderBySavedAtDesc(AppUser appUser, Pageable pageable);
+    Page<PostResp> findByPostIsActiveTrueAndAppUserAndIsSavedTrueOrderBySavedAtDesc(AppUser appUser, Pageable pageable);
 
-    Page<PostResp> findByAppUserAndReqStatusOrderByReqSentAtDesc(AppUser appUser, PostRequest accepted, Pageable pageable);
+    Page<PostResp> findByPostIsActiveTrueAndAppUserAndReqStatusOrderByReqSentAtDesc(AppUser appUser, PostRequest accepted, Pageable pageable);
 
-    Page<PostResp> findByPostAppUserAndReqStatusNotOrderByReqSentAtDesc(AppUser appUser, PostRequest notYetSent, Pageable pageable);
+    Page<PostResp> findByPostIsActiveTrueAndPostAppUserAndReqStatusNotOrderByReqSentAtDesc(AppUser appUser, PostRequest notYetSent, Pageable pageable);
 
-    Optional<PostResp> findByIdAndPostAppUserAndReqStatusNot(Long id, AppUser appUser, PostRequest request);
+    Optional<PostResp> findByPostIsActiveTrueAndIdAndPostAppUserAndReqStatusNot(Long id, AppUser appUser, PostRequest request);
 
     @Query(nativeQuery = true, value = "SELECT DISTINCT b.id\n" +
             "FROM            post_resp a\n" +
@@ -41,6 +41,7 @@ public interface PostRespRepo extends JpaRepository<PostResp, Long> {
             "LEFT JOIN       post c\n" +
             "ON              c.id=a.post_id\n" +
             "WHERE           c.app_user_id=?1\n" +
+            "AND             c.is_active=true\n" +
             "AND             a.req_status=?2 limit ?3 offset ?4")
     List<Long> findByPostAppUserAndReqStatus(Long loggedInUSerId, String reqStatus, Integer limit, Integer offSet);
 
@@ -64,6 +65,7 @@ public interface PostRespRepo extends JpaRepository<PostResp, Long> {
             "            LEFT JOIN       post c\n" +
             "            ON              c.id=a.post_id\n" +
             "            WHERE           c.app_user_id=?1\n" +
+            "            AND             c.is_active=true\n" +
             "            AND             a.req_status=?2) as id")
     Long countOfInsiders(Long id, String name);
 }
