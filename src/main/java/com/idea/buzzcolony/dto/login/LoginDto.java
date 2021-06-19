@@ -11,6 +11,8 @@ import lombok.Setter;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class LoginDto {
 
+    private Long id;
+
     private String userId;
 
     private String password;

@@ -36,6 +36,8 @@ public class SignUpDto {
 
     private FileDto profilePicDto;
 
+    private String profilePicUrl;
+
     private String occupation;
 
     private String aboutMe;

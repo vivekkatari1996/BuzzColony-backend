@@ -9,6 +9,7 @@ import com.idea.buzzcolony.dto.master.*;
 import com.idea.buzzcolony.dto.vimeo.FileDto;
 import com.idea.buzzcolony.dto.vimeo.VimeoRespDto;
 import com.idea.buzzcolony.enums.base.FileType;
+import com.idea.buzzcolony.enums.master.MtCatType;
 import com.idea.buzzcolony.enums.post.PostRequest;
 import com.idea.buzzcolony.enums.post.PostStatus;
 import com.idea.buzzcolony.model.base.AppUser;
@@ -132,6 +133,9 @@ public class ClientServiceImpl implements ClientService {
         post.setMtCategory(mtCategory);
         post.setMtEstAmount(mtEstAmount);
         post.setMtEstPart(mtEstPart);
+        if (post.getMtCategory().getType().equals(MtCatType.PATENT) || post.getMtCategory().getType().equals(MtCatType.PATENT_INPROCESS)) {
+            post.setPatentNo(postDto.getPatentNo());
+        }
         post = postRepo.save(post);
         String uploadLink = createVideo(appUser, postDto.getVideoDto(), post);
         return new CreatePostRespDto(post.getId(), uploadLink);
@@ -384,7 +388,10 @@ public class ClientServiceImpl implements ClientService {
         } else {
             appUser = Utility.getApplicationUserFromAuthentication(appUserRepo);
         }
-        return new ApiResponse(HttpStatus.OK, appMessage.getMessage("success"), new SignUpDto(appUser));
+        SignUpDto signUpDto = new SignUpDto(appUser);
+        Optional<FileEntity> optionalProfilePic = fileEntityRepo.findByRefIdAndFileType(appUser.getId(), FileType.PROFILE_PIC);
+        optionalProfilePic.ifPresent(fileEntity -> signUpDto.setProfilePicUrl(s3Service.getPreSignedUrlForDownload(fileEntity.getUuid())));
+        return new ApiResponse(HttpStatus.OK, appMessage.getMessage("success"), signUpDto);
     }
 
     @Override

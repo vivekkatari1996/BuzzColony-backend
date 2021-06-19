@@ -58,6 +58,8 @@ public class Post extends BaseEntity {
     @ManyToOne
     private MtEstAmount mtEstAmount;
 
+    private String patentNo;
+
     @ManyToOne
     private AppUser appUser;                        // post creator
 

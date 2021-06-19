@@ -90,9 +90,10 @@ public class UserServiceImpl implements UserService {
             return new ApiResponse(HttpStatus.BAD_REQUEST, appMessage.getMessage("error.deactivate.account"), null);
         }
         loginDto = new LoginDto();
+        loginDto.setId(optionalAppUser.get().getId());
         loginDto.setUserId(optionalAppUser.get().getUserId());
         loginDto.setEmail(optionalAppUser.get().getEmail());
-        loginDto.setToken(Utility.createToken(optionalAppUser.get().getEmail(), Constants.JWT_VALIDITY));
+        loginDto.setToken(Utility.createToken(optionalAppUser.get().getEmail(), Constants.LOGIN_VALIDITY));
         Optional<FileEntity> profilePic = fileEntityRepo.findByRefIdAndFileType(optionalAppUser.get().getId(), FileType.PROFILE_PIC);
         if (profilePic.isPresent()) {
             loginDto.setProfilePicUrl(s3Service.getPreSignedUrlForDownload(profilePic.get().getUuid()));
@@ -142,7 +143,7 @@ public class UserServiceImpl implements UserService {
             }
             LoginDto loginDto = new LoginDto();
             loginDto.setUserId(optionalAppUser.get().getEmail());
-            loginDto.setToken(Utility.createToken(optionalAppUser.get().getEmail(), Constants.JWT_VALIDITY));
+            loginDto.setToken(Utility.createToken(optionalAppUser.get().getEmail(), Constants.LOGIN_VALIDITY));
             apiResponse = new ApiResponse(HttpStatus.OK, appMessage.getMessage("success"), loginDto);
         } catch (Exception e) {
             return apiResponse;

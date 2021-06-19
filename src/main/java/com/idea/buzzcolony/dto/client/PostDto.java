@@ -86,6 +86,8 @@ public class PostDto {
 
     private String estAmountName;
 
+    private String patentNo;
+
     public PostDto(Post post, String videoUrl, Boolean isFullDetails, Optional<PostResp> optionalPostResp, List<FileEntity> profilePics, S3Service s3Service) {
         if (isFullDetails) {
             this.acceptedPartners = post.getAcceptedPrs();
@@ -102,6 +104,7 @@ public class PostDto {
             this.estAmountName = post.getMtEstAmount().getName();
             this.estPartName = post.getMtEstPart().getName();
             this.bTypeName = post.getMtSubBtype().getName();
+            this.patentNo = post.getPatentNo();
         }
         this.id = post.getId();
         this.title = post.getTitle();
