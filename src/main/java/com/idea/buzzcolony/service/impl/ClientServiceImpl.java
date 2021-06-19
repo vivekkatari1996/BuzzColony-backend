@@ -297,7 +297,7 @@ public class ClientServiceImpl implements ClientService {
                     String.class, cb.concat(cb.upper(appUser.get("firstName")), cb.upper(appUser.get("lastName"))), cb.literal(" "),
                     cb.literal(""));
             Predicate searchQueryPredicate = cb.or(cb.like(function, "%" + search.toUpperCase() + "%"), cb.like(cb.upper(root.get("title")), "%" + search.toUpperCase() + "%")
-                                                    , cb.like(cb.upper(appUser.get("email")), "%" + search.toUpperCase() + "%"));
+                                                    , cb.like(cb.upper(appUser.get("email")), "%" + search.toUpperCase() + "%"), cb.like(cb.upper(appUser.get("userId")), "%" + search.toUpperCase() + "%"));
             predicateList.add(searchQueryPredicate);
         }
 
