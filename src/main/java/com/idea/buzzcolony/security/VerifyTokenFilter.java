@@ -57,6 +57,10 @@ public class VerifyTokenFilter extends OncePerRequestFilter {
                     throw new Exception("User not found");
                 }
 
+                if (!optionalAppUser.get().getIsEmailVerified()) {
+                    throw new Exception("Please verify your email");
+                }
+
                 List<GrantedAuthority> grantedAuthorities = getAuthorities();
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(optionalAppUser.get(), null, grantedAuthorities);
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

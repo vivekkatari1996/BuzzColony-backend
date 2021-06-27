@@ -5,6 +5,7 @@ import com.idea.buzzcolony.dto.login.SignUpDto;
 import com.idea.buzzcolony.dto.vimeo.FileDto;
 import com.idea.buzzcolony.enums.post.PostRequest;
 import com.idea.buzzcolony.service.ClientService;
+import com.idea.buzzcolony.service.GoogleMapService;
 import com.idea.buzzcolony.util.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -22,6 +23,9 @@ public class ClientController {
 
     @Autowired
     private ClientService clientService;
+
+    @Autowired
+    private GoogleMapService googleMapService;
 
     @PostMapping("save-post")
     public ResponseEntity<ApiResponse> saveOrUpdatePost(@RequestBody PostDto postDto) throws Exception {
@@ -164,6 +168,12 @@ public class ClientController {
     @PostMapping("unknown")
     public ResponseEntity<ApiResponse> unknown(@RequestParam Long id) throws Exception {
         ApiResponse apiResponse = clientService.unknown(id);
+        return new ResponseEntity<>(apiResponse, apiResponse.getStatus());
+    }
+
+    @GetMapping("search-places")
+    public ResponseEntity<ApiResponse> searchForPlaces(@RequestParam String country, @RequestParam String city) throws Exception {
+        ApiResponse apiResponse = googleMapService.getCitiesBasedOnCountry(country, city);
         return new ResponseEntity<>(apiResponse, apiResponse.getStatus());
     }
 

@@ -13,7 +13,7 @@ import java.time.format.DateTimeFormatter;
 @Getter
 @Setter
 @NoArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_NULL)
+//@JsonInclude(JsonInclude.Include.NON_NULL)
 public class SignUpDto {
 
     private String firstName;
@@ -44,6 +44,8 @@ public class SignUpDto {
 
     private Boolean isActive = Boolean.TRUE;
 
+    private Long countryId;
+
     public SignUpDto(AppUser appUser) {
         this.firstName = appUser.getFirstName();
         this.lastName = appUser.getLastName();
@@ -55,5 +57,8 @@ public class SignUpDto {
         this.permanentAddress = appUser.getPermanentAddress();
         this.aboutMe = appUser.getAboutMe();
         this.occupation = appUser.getOccupation();
+        if (appUser.getMtCountry() != null) {
+            this.countryId = appUser.getMtCountry().getId();
+        }
     }
 }

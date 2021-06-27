@@ -23,8 +23,11 @@ public class MtCategoryDto {
 
     private String name;
 
+    private String type;
+
     public MtCategoryDto(MtCategory mtCategory) {
         this.id = mtCategory.getId();
         this.name = mtCategory.getName();
+        this.type = mtCategory.getType().name();
     }
 }

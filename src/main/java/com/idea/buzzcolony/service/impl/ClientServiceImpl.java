@@ -133,6 +133,8 @@ public class ClientServiceImpl implements ClientService {
         post.setMtCategory(mtCategory);
         post.setMtEstAmount(mtEstAmount);
         post.setMtEstPart(mtEstPart);
+        post.setContactEmail(postDto.getEmail());
+        post.setPhoneNo(postDto.getPhoneNo());
         if (post.getMtCategory().getType().equals(MtCatType.PATENT) || post.getMtCategory().getType().equals(MtCatType.PATENT_INPROCESS)) {
             post.setPatentNo(postDto.getPatentNo());
         }
@@ -149,11 +151,9 @@ public class ClientServiceImpl implements ClientService {
             postAddress = post.getPostAddress();
         }
         MtCountry mtCountry = mtCountryRepo.findById(postAddressDto.getMtCountryId()).orElseThrow(() -> new Exception(appMessage.getMessage("data.not.found")));
-        postAddress.setCity(postAddress.getCity());
-        postAddress.setDistrict(postAddress.getDistrict());
-        postAddress.setState(postAddress.getState());
-        postAddress.setTown(postAddress.getTown());
+        postAddress.setCity(postAddressDto.getCity());
         postAddress.setMtCountry(mtCountry);
+        postAddress.setPlacesId(postAddressDto.getPlaceId());
         return postAddress;
     }
 
@@ -326,6 +326,11 @@ public class ClientServiceImpl implements ClientService {
             predicateList.add(mtEstPart);
         }
 
+        if (postDto.getPostAddressDto() != null && postDto.getPostAddressDto().getPlaceId() != null) {
+            Predicate placesPredicate = cb.or(cb.equal(root.get("postAddress").get("placeId"), postDto.getPostAddressDto().getPlaceId()));
+            predicateList.add(placesPredicate);
+        }
+
         criteriaQuery.where(predicateList.toArray(new Predicate[0]));
         if (search != null && !search.isEmpty()) {
             criteriaQuery.orderBy(Arrays.asList(cb.asc(root.get("appUser").get("firstName")), cb.asc(root.get("appUser").get("lastName"))));
@@ -410,6 +415,10 @@ public class ClientServiceImpl implements ClientService {
         appUser.setPhoneNo(signUpDto.getPhoneNo());
         appUser.setDateOfBirth(LocalDate.parse(signUpDto.getDateOfBirth(), DateTimeFormatter.ofPattern(Constants.DATE)));
         appUser.setIsActive(signUpDto.getIsActive());
+        Optional<MtCountry> optionalMtCountry = mtCountryRepo.findById(signUpDto.getCountryId());
+        if (optionalMtCountry.isPresent()) {
+            appUser.setMtCountry(optionalMtCountry.get());
+        }
         appUser = appUserRepo.save(appUser);
         FileDto fileDto = signUpDto.getProfilePicDto();
         if (fileDto != null) {

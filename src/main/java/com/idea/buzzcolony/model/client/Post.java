@@ -65,4 +65,8 @@ public class Post extends BaseEntity {
 
     @Column(columnDefinition = "boolean default true")
     private Boolean isActive = Boolean.TRUE;
+
+    private String contactEmail;
+
+    private String phoneNo;
 }

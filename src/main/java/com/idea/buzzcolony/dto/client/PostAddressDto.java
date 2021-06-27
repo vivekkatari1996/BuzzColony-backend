@@ -15,29 +15,22 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_NULL)
+//@JsonInclude(JsonInclude.Include.NON_NULL)
 public class PostAddressDto {
 
     private Long id;
 
-    private String state;
-
     private String city;
-
-    private String district;
-
-    private String town;
 
     private Long mtCountryId;
 
     private String countryName;
 
+    private String placeId;
+
     public PostAddressDto(PostAddress postAddress) {
         this.id = postAddress.getId();
-        this.state = postAddress.getState();
         this.city = postAddress.getCity();
-        this.district = postAddress.getDistrict();
-        this.town = postAddress.getTown();
         this.mtCountryId = postAddress.getMtCountry().getId();
         this.countryName = postAddress.getMtCountry().getName();
     }

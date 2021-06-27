@@ -35,10 +35,10 @@ public class S3ServiceImpl implements S3Service {
 
     @Override
     public FileDto getPreSignedUrlForUpload(FileDto fileDto) throws Exception {
-        if (fileDto.getUuid().isEmpty()) {
+        if (fileDto.getUuid() == null) {
             fileDto.setUuid(UUID.fromString(Generators.timeBasedGenerator().generate().toString()).timestamp() + "");
         }
-        AmazonS3 s3Client = AmazonS3ClientBuilder.standard().build();
+        AmazonS3 s3Client = AmazonS3ClientBuilder.standard().withRegion(Regions.AP_SOUTH_1).build();
         // Set the pre-signed URL to expire after 15 minutes.
         java.util.Date expiration = new java.util.Date();
         long expTimeMillis = expiration.getTime();
@@ -67,7 +67,7 @@ public class S3ServiceImpl implements S3Service {
     public String getPreSignedUrlForDownload(String uuid) {
         String result = "";
         try {
-            AmazonS3 s3Client = AmazonS3ClientBuilder.standard().withRegion(Regions.AP_SOUTHEAST_1).build();
+            AmazonS3 s3Client = AmazonS3ClientBuilder.standard().withRegion(Regions.AP_SOUTH_1).build();
             // Set the presigned URL to expire after 15 minutes.
             java.util.Date expiration = new java.util.Date();
             long expTimeMillis = expiration.getTime();

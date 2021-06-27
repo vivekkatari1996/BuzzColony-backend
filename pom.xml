@@ -104,6 +104,20 @@
             <version>4.0.1</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/se.walkercrou/google-places-api-java -->
+        <dependency>
+            <groupId>se.walkercrou</groupId>
+            <artifactId>google-places-api-java</artifactId>
+            <version>2.1.7</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-ses -->
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-ses</artifactId>
+            <version>1.12.9</version>
+        </dependency>
+
     </dependencies>
 
     <build>

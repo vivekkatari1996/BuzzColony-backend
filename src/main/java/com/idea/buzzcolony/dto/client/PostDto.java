@@ -95,8 +95,8 @@ public class PostDto {
             this.occupation = post.getOccupation();
             this.bType = post.getBType();
             this.postAddressDto = new PostAddressDto(post.getPostAddress());
-            this.email = post.getAppUser().getEmail();
-            this.phoneNo = post.getAppUser().getPhoneNo();
+            this.email = post.getContactEmail();
+            this.phoneNo = post.getPhoneNo();
             this.mtCategoryId = post.getMtCategory().getId();
             this.mtEstAmountId = post.getMtEstAmount().getId();
             this.mtEstPartId = post.getMtEstPart().getId();

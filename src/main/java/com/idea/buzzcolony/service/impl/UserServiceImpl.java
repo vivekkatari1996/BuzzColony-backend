@@ -9,8 +9,10 @@ import com.idea.buzzcolony.dto.login.ForgetPassDto;
 import com.idea.buzzcolony.dto.login.LoginDto;
 import com.idea.buzzcolony.dto.login.SignUpDto;
 import com.idea.buzzcolony.dto.master.MtCountryDto;
+import com.idea.buzzcolony.dto.ses.SesDto;
 import com.idea.buzzcolony.enums.base.FileType;
 import com.idea.buzzcolony.enums.base.TokenType;
+import com.idea.buzzcolony.enums.ses.EmailTemplate;
 import com.idea.buzzcolony.model.base.AppUser;
 import com.idea.buzzcolony.model.base.FileEntity;
 import com.idea.buzzcolony.model.base.TokenStore;
@@ -72,9 +74,15 @@ public class UserServiceImpl implements UserService {
         appUser.setUserId(signUpDto.getUserId());
         appUser.setPassword(new BCryptPasswordEncoder().encode(signUpDto.getPassword()));
         appUser.setDateOfBirth(LocalDate.parse(signUpDto.getDateOfBirth(), DateTimeFormatter.ofPattern(Constants.DATE)));
+        Optional<MtCountry> optionalMtCountry = mtCountryRepo.findById(signUpDto.getCountryId());
+        if (optionalMtCountry.isPresent()) {
+            appUser.setMtCountry(optionalMtCountry.get());
+        }
         appUser = appUserRepo.save(appUser);
         String token = createToken(appUser, TokenType.VERIFY_EMAIL);
-        return new ApiResponse(HttpStatus.OK, appMessage.getMessage("success"), token);
+        String link = Constants.Email_verify + token;
+        AwsSESServiceImpl.sendSESMail(new SesDto(appUser.getFirstName(), link), appUser.getEmail(), EmailTemplate.EmailVerify);
+        return new ApiResponse(HttpStatus.OK, appMessage.getMessage("success"), null);
     }
 
     @Override
@@ -193,7 +201,9 @@ public class UserServiceImpl implements UserService {
     public ApiResponse getForgetPassMail(String email) throws Exception {
         AppUser appUser = appUserRepo.findByEmailIgnoreCaseAndIsActiveTrue(email).orElseThrow(() -> new Exception(appMessage.getMessage("something.went.wrong")));
         String token = createToken(appUser, TokenType.FORGET_PASS);
-        return new ApiResponse(HttpStatus.OK, appMessage.getMessage("success"), token);
+        String link = Constants.Forget_pass + token;
+        AwsSESServiceImpl.sendSESMail(new SesDto(appUser.getFirstName(), link), appUser.getEmail(), EmailTemplate.ForgetPass);
+        return new ApiResponse(HttpStatus.OK, appMessage.getMessage("success"), null);
     }
 
     private String createToken(AppUser appUser, TokenType type) throws Exception{

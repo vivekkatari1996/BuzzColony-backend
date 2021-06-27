@@ -1,5 +1,6 @@
 package com.idea.buzzcolony.model.base;
 
+import com.idea.buzzcolony.model.master.MtCountry;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -52,4 +53,7 @@ public class AppUser extends BaseEntity {
 
     @Column(columnDefinition = "TEXT")
     private String aboutMe;
+
+    @ManyToOne
+    private MtCountry mtCountry;
 }

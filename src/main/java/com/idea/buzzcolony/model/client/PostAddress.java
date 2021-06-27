@@ -6,9 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
 
 /**
  * @author Anand Ramesh
@@ -24,11 +22,7 @@ public class PostAddress extends BaseEntity {
     @ManyToOne
     private MtCountry mtCountry;
 
-    private String state;
-
     private String city;
 
-    private String district;
-
-    private String town;
+    private String placesId;
 }
