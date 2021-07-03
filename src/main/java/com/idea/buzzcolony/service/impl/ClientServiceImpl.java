@@ -121,7 +121,7 @@ public class ClientServiceImpl implements ClientService {
         MtSubBtype mtSubBtype = mtSubBtypeRepo.findById(postDto.getMtSubBTypeId()).orElseThrow(() -> new Exception(appMessage.getMessage("data.not.found")));
         MtEstAmount mtEstAmount = mtEstAmountRepo.findById(postDto.getMtEstAmountId()).orElseThrow(() -> new Exception(appMessage.getMessage("data.not.found")));
         MtEstPart mtEstPart = mtEstPartRepo.findById(postDto.getMtEstPartId()).orElseThrow(() -> new Exception(appMessage.getMessage("data.not.found")));
-        MtCategory mtCategory = mtCategoryRepo.findById(postDto.getMtCategoryId()).orElseThrow(() -> new Exception(appMessage.getMessage("data.not.found")));
+        MtCategory mtCategory = mtCategoryRepo.findByType(MtCatType.valueOf(postDto.getMtCategoryType())).orElseThrow(() -> new Exception(appMessage.getMessage("data.not.found")));
         post.setAppUser(appUser);
         post.setMtSubBtype(mtSubBtype);
         post.setBType(postDto.getBType());
@@ -139,7 +139,10 @@ public class ClientServiceImpl implements ClientService {
             post.setPatentNo(postDto.getPatentNo());
         }
         post = postRepo.save(post);
-        String uploadLink = createVideo(appUser, postDto.getVideoDto(), post);
+        String uploadLink = null;
+        if (postDto.getVideoDto() != null && postDto.getVideoDto().getName() != null) {
+            uploadLink = createVideo(postDto.getVideoDto(), post);
+        }
         return new CreatePostRespDto(post.getId(), uploadLink);
     }
 
@@ -157,7 +160,7 @@ public class ClientServiceImpl implements ClientService {
         return postAddress;
     }
 
-    private String createVideo(AppUser appUser, FileDto fileDto, Post post) throws Exception {
+    private String createVideo(FileDto fileDto, Post post) throws Exception {
         Optional<FileEntity> optionalFileEntity = fileEntityRepo.findByRefIdAndFileType(post.getId(), FileType.POST);
         if (optionalFileEntity.isPresent()) {
             vimeoService.delete(optionalFileEntity.get().getUuid());
@@ -301,8 +304,8 @@ public class ClientServiceImpl implements ClientService {
             predicateList.add(searchQueryPredicate);
         }
 
-        if (postDto.getMtCategoryId() != null && postDto.getMtCategoryId() != 0L) {
-            Predicate mtCategoryId = cb.or(cb.equal(root.get("mtCategory").get("id"), postDto.getMtCategoryId()));
+        if (postDto.getMtCategoryType() != null && !postDto.getMtCategoryType().isEmpty()) {
+            Predicate mtCategoryId = cb.or(cb.equal(root.get("mtCategory").get("type").as(String.class), postDto.getMtCategoryType()));
             predicateList.add(mtCategoryId);
         }
 

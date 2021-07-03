@@ -46,6 +46,8 @@ public class SignUpDto {
 
     private Long countryId;
 
+    private String countryName;
+
     public SignUpDto(AppUser appUser) {
         this.firstName = appUser.getFirstName();
         this.lastName = appUser.getLastName();
@@ -59,6 +61,7 @@ public class SignUpDto {
         this.occupation = appUser.getOccupation();
         if (appUser.getMtCountry() != null) {
             this.countryId = appUser.getMtCountry().getId();
+            this.countryName = appUser.getMtCountry().getName();
         }
     }
 }

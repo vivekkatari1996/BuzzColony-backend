@@ -1,6 +1,5 @@
 package com.idea.buzzcolony.dto.client;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.idea.buzzcolony.dto.vimeo.FileDto;
 import com.idea.buzzcolony.enums.post.PostRequest;
 import com.idea.buzzcolony.model.base.AppUser;
@@ -52,7 +51,7 @@ public class PostDto {
 
     private String phoneNo;
 
-    private Long mtCategoryId;
+    private String mtCategoryType;
 
     private String search;
 
@@ -97,7 +96,7 @@ public class PostDto {
             this.postAddressDto = new PostAddressDto(post.getPostAddress());
             this.email = post.getContactEmail();
             this.phoneNo = post.getPhoneNo();
-            this.mtCategoryId = post.getMtCategory().getId();
+            this.mtCategoryType = post.getMtCategory().getType().name();
             this.mtEstAmountId = post.getMtEstAmount().getId();
             this.mtEstPartId = post.getMtEstPart().getId();
             this.categoryName = post.getMtCategory().getName();
