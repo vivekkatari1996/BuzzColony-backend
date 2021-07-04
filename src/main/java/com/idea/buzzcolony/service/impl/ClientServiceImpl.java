@@ -151,14 +151,15 @@ public class ClientServiceImpl implements ClientService {
         if (post.getPostAddress() == null) {
             postAddress = new PostAddress();
             postAddress.setPlacesId(postAddressDto.getPlaceId());
+            postAddress.setCity(postAddressDto.getCity());
         } else {
             postAddress = post.getPostAddress();
-            if (postAddressDto.getPlaceId() != null) {
+            if (postAddressDto.getPlaceId() != null && !postAddressDto.getPlaceId().isEmpty()) {
                 postAddress.setPlacesId(postAddressDto.getPlaceId());
+                postAddress.setCity(postAddressDto.getCity());
             }
         }
         MtCountry mtCountry = mtCountryRepo.findById(postAddressDto.getMtCountryId()).orElseThrow(() -> new Exception(appMessage.getMessage("data.not.found")));
-        postAddress.setCity(postAddressDto.getCity());
         postAddress.setMtCountry(mtCountry);
         return postAddress;
     }
@@ -302,38 +303,38 @@ public class ClientServiceImpl implements ClientService {
             Expression<String> function = cb.function("replace",
                     String.class, cb.concat(cb.upper(appUser.get("firstName")), cb.upper(appUser.get("lastName"))), cb.literal(" "),
                     cb.literal(""));
-            Predicate searchQueryPredicate = cb.or(cb.like(function, "%" + search.toUpperCase() + "%"), cb.like(cb.upper(root.get("title")), "%" + search.toUpperCase() + "%")
+            Predicate searchQueryPredicate = cb.and(cb.like(function, "%" + search.toUpperCase() + "%"), cb.like(cb.upper(root.get("title")), "%" + search.toUpperCase() + "%")
                                                     , cb.like(cb.upper(appUser.get("email")), "%" + search.toUpperCase() + "%"), cb.like(cb.upper(appUser.get("userId")), "%" + search.toUpperCase() + "%"));
             predicateList.add(searchQueryPredicate);
         }
 
         if (postDto.getMtCategoryType() != null && !postDto.getMtCategoryType().isEmpty()) {
-            Predicate mtCategoryId = cb.or(cb.equal(root.get("mtCategory").get("type").as(String.class), postDto.getMtCategoryType()));
+            Predicate mtCategoryId = cb.and(cb.equal(root.get("mtCategory").get("type").as(String.class), postDto.getMtCategoryType()));
             predicateList.add(mtCategoryId);
         }
 
         if (postDto.getMtEstAmountId() != null && postDto.getMtEstAmountId() != 0L) {
-            Predicate mtEstAmount = cb.or(cb.equal(root.get("mtEstAmount").get("id"), postDto.getMtEstAmountId()));
+            Predicate mtEstAmount = cb.and(cb.equal(root.get("mtEstAmount").get("id"), postDto.getMtEstAmountId()));
             predicateList.add(mtEstAmount);
         }
 
         if (postDto.getMtEstPartId() != null && postDto.getMtEstPartId() != 0L) {
-            Predicate mtEstPart = cb.or(cb.equal(root.get("mtEstPart").get("id"), postDto.getMtEstPartId()));
+            Predicate mtEstPart = cb.and(cb.equal(root.get("mtEstPart").get("id"), postDto.getMtEstPartId()));
             predicateList.add(mtEstPart);
         }
 
         if (postDto.getMtSubBTypeId() != null && postDto.getMtSubBTypeId() != 0L) {
-            Predicate mtSubBtype = cb.or(cb.equal(root.get("mtSubBtype").get("id"), postDto.getMtSubBTypeId()));
+            Predicate mtSubBtype = cb.and(cb.equal(root.get("mtSubBtype").get("id"), postDto.getMtSubBTypeId()));
             predicateList.add(mtSubBtype);
         }
 
         if (postDto.getMtCountryId() != null && postDto.getMtCountryId() != 0L) {
-            Predicate mtEstPart = cb.or(cb.equal(root.get("postAddress").get("mtCountry").get("id"), postDto.getMtCountryId()));
+            Predicate mtEstPart = cb.and(cb.equal(root.get("postAddress").get("mtCountry").get("id"), postDto.getMtCountryId()));
             predicateList.add(mtEstPart);
         }
 
         if (postDto.getPostAddressDto() != null && postDto.getPostAddressDto().getPlaceId() != null) {
-            Predicate placesPredicate = cb.or(cb.equal(root.get("postAddress").get("placeId"), postDto.getPostAddressDto().getPlaceId()));
+            Predicate placesPredicate = cb.and(cb.equal(root.get("postAddress").get("placeId"), postDto.getPostAddressDto().getPlaceId()));
             predicateList.add(placesPredicate);
         }
 
