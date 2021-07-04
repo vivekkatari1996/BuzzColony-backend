@@ -108,9 +108,6 @@ public class ClientServiceImpl implements ClientService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public ApiResponse saveOrUpdatePost(PostDto postDto) throws Exception {
-        if (postDto.getVideoDto() == null || postDto.getVideoDto().getSize() == null) {
-            throw new Exception(appMessage.getMessage("data.not.found"));
-        }
         AppUser appUser = Utility.getApplicationUserFromAuthentication(appUserRepo);
         CreatePostRespDto createPostRespDto = createPost(postDto, appUser);
         return new ApiResponse(HttpStatus.OK, appMessage.getMessage("success"), createPostRespDto);
@@ -118,6 +115,9 @@ public class ClientServiceImpl implements ClientService {
 
     private CreatePostRespDto createPost(PostDto postDto, AppUser appUser) throws Exception {
         Post post = postRepo.findByIdAndAppUser(postDto.getId(), appUser).orElse(new Post());
+        if (post.getId() == null && (postDto.getVideoDto() == null || postDto.getVideoDto().getSize() == null)) {
+            throw new Exception(appMessage.getMessage("video.data.not.found"));
+        }
         MtSubBtype mtSubBtype = mtSubBtypeRepo.findById(postDto.getMtSubBTypeId()).orElseThrow(() -> new Exception(appMessage.getMessage("data.not.found")));
         MtEstAmount mtEstAmount = mtEstAmountRepo.findById(postDto.getMtEstAmountId()).orElseThrow(() -> new Exception(appMessage.getMessage("data.not.found")));
         MtEstPart mtEstPart = mtEstPartRepo.findById(postDto.getMtEstPartId()).orElseThrow(() -> new Exception(appMessage.getMessage("data.not.found")));
@@ -150,13 +150,16 @@ public class ClientServiceImpl implements ClientService {
         PostAddress postAddress;
         if (post.getPostAddress() == null) {
             postAddress = new PostAddress();
+            postAddress.setPlacesId(postAddressDto.getPlaceId());
         } else {
             postAddress = post.getPostAddress();
+            if (postAddressDto.getPlaceId() != null) {
+                postAddress.setPlacesId(postAddressDto.getPlaceId());
+            }
         }
         MtCountry mtCountry = mtCountryRepo.findById(postAddressDto.getMtCountryId()).orElseThrow(() -> new Exception(appMessage.getMessage("data.not.found")));
         postAddress.setCity(postAddressDto.getCity());
         postAddress.setMtCountry(mtCountry);
-        postAddress.setPlacesId(postAddressDto.getPlaceId());
         return postAddress;
     }
 
