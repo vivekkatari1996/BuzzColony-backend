@@ -333,8 +333,8 @@ public class ClientServiceImpl implements ClientService {
             predicateList.add(mtEstPart);
         }
 
-        if (postDto.getPostAddressDto() != null && postDto.getPostAddressDto().getPlaceId() != null) {
-            Predicate placesPredicate = cb.and(cb.equal(root.get("postAddress").get("placeId"), postDto.getPostAddressDto().getPlaceId()));
+        if (postDto.getPlaceId() != null && !postDto.getPlaceId().isEmpty()) {
+            Predicate placesPredicate = cb.and(cb.equal(root.get("postAddress").get("placesId"), postDto.getPlaceId()));
             predicateList.add(placesPredicate);
         }
 

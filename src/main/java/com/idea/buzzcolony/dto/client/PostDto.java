@@ -87,6 +87,8 @@ public class PostDto {
 
     private String patentNo;
 
+    private String placeId;
+
     public PostDto(Post post, String videoUrl, Boolean isFullDetails, Optional<PostResp> optionalPostResp, List<FileEntity> profilePics, S3Service s3Service) {
         if (isFullDetails) {
             this.acceptedPartners = post.getAcceptedPrs();

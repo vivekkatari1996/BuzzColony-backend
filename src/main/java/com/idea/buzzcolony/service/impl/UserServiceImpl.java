@@ -122,16 +122,17 @@ public class UserServiceImpl implements UserService {
 
             Optional<AppUser> optionalAppUser = appUserRepo.findByEmailIgnoreCase(email);
             if (!optionalAppUser.isPresent()) {
-                AppUser appUser = new AppUser();
-                appUser.setEmail(email);
-                appUser.setIsEmailVerified(Boolean.TRUE);
-                appUser.setFirstName((String) payload.get("given_name"));
-                appUser.setLastName((String) payload.get("family_name"));
-                if (payload.getSubject() != null && appUser.getGoogleId() == null) {
-                    appUser.setGoogleId(payload.getSubject());
-                }
-                appUser = appUserRepo.save(appUser);
-                optionalAppUser = Optional.of(appUser);
+                return new ApiResponse(HttpStatus.BAD_REQUEST, appMessage.getMessage("user.register", new Object[]{email}), null);
+//                AppUser appUser = new AppUser();
+//                appUser.setEmail(email);
+//                appUser.setIsEmailVerified(Boolean.TRUE);
+//                appUser.setFirstName((String) payload.get("given_name"));
+//                appUser.setLastName((String) payload.get("family_name"));
+//                if (payload.getSubject() != null && appUser.getGoogleId() == null) {
+//                    appUser.setGoogleId(payload.getSubject());
+//                }
+//                appUser = appUserRepo.save(appUser);
+//                optionalAppUser = Optional.of(appUser);
             } else {
                 Boolean canSave = Boolean.FALSE;
                 if (optionalAppUser.isPresent() && payload.getSubject() != null && optionalAppUser.get().getGoogleId() == null) {
@@ -150,8 +151,14 @@ public class UserServiceImpl implements UserService {
                 throw new Exception(appMessage.getMessage("access.denied"));
             }
             LoginDto loginDto = new LoginDto();
-            loginDto.setUserId(optionalAppUser.get().getEmail());
+            loginDto.setId(optionalAppUser.get().getId());
+            loginDto.setUserId(optionalAppUser.get().getUserId());
+            loginDto.setEmail(optionalAppUser.get().getEmail());
             loginDto.setToken(Utility.createToken(optionalAppUser.get().getEmail(), Constants.LOGIN_VALIDITY));
+            Optional<FileEntity> profilePic = fileEntityRepo.findByRefIdAndFileType(optionalAppUser.get().getId(), FileType.PROFILE_PIC);
+            if (profilePic.isPresent()) {
+                loginDto.setProfilePicUrl(s3Service.getPreSignedUrlForDownload(profilePic.get().getUuid()));
+            }
             apiResponse = new ApiResponse(HttpStatus.OK, appMessage.getMessage("success"), loginDto);
         } catch (Exception e) {
             return apiResponse;

@@ -29,7 +29,7 @@ public class UserController {
         return new ResponseEntity<>(apiResponse, apiResponse.getStatus());
     }
 
-//    @GetMapping("/google-login")
+    @GetMapping("/google-login")
     public ResponseEntity<ApiResponse> socialLogin(@RequestParam String code) {
         ApiResponse apiResponse = userService.socialLogin(code);
         return new ResponseEntity<>(apiResponse, apiResponse.getStatus());
