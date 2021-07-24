@@ -63,7 +63,7 @@ public class ClientController {
         return new ResponseEntity<>(apiResponse, apiResponse.getStatus());
     }
 
-//    @GetMapping("transcode-status")
+    @GetMapping("transcode-status")
     public ResponseEntity<ApiResponse> getTransCodeStatus(@RequestParam Long id) throws Exception {
         ApiResponse apiResponse = clientService.getTransCodeStatus(id);
         return new ResponseEntity<>(apiResponse, apiResponse.getStatus());

@@ -6,5 +6,5 @@ package com.idea.buzzcolony.enums.master;
  * @since 21/02/21
  */
 public enum MtEstPartType {
-    ONE,TWO,THREE,FOUR,FIVE_OR_MORE
+    ZERO, ONE, TWO, THREE, FOUR, FIVE_OR_MORE
 }

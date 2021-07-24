@@ -176,7 +176,7 @@ public class UserServiceImpl implements UserService {
                         "619000586523-410qoquaqoadt73f4mb95c3ptujddotv.apps.googleusercontent.com",
                         "hlASSDZqzj5zmebUXE5OQYLI",
                         code,
-                        "http://localhost:4200/login")  // Specify the same redirect URI that you use with your web
+                        "https://www.buzzcolony.com/login")  // Specify the same redirect URI that you use with your web
                         // app. If you don't have a web version of your app, you can
                         // specify an empty string.
                         .execute();

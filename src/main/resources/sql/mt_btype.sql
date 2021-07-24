@@ -1,12 +1,12 @@
 INSERT INTO public.mt_btype(
 id, created_on, updated_on, is_active, name, seq, type)
 VALUES (nextval('mt_btype_id_seq'), now(), now(), true, 'Aerospace & Defence Industry', 0, 'AEROSPACE_DEFENCE'),
-      (nextval('mt_btype_id_seq'), now(), now(), true, 'Agriculture industry', 1, 'AGRICULTURE'),
-  (nextval('mt_btype_id_seq'), now(), now(), true, 'Bank', 2, 'BANK'),
+(nextval('mt_btype_id_seq'), now(), now(), true, 'Agriculture industry', 1, 'AGRICULTURE'),
+(nextval('mt_btype_id_seq'), now(), now(), true, 'Bank', 2, 'BANK'),
 (nextval('mt_btype_id_seq'), now(), now(), true, 'Construction Industry', 3, 'CONSTRUCTION'),
 (nextval('mt_btype_id_seq'), now(), now(), true, 'Education Industry', 4, 'EDUCATION'),
 (nextval('mt_btype_id_seq'), now(), now(), true, 'Entertainment Industry', 5, 'ENTERTAINMENT'),
-(nextval('mt_btype_id_seq'), now(), now(), true, 'Electronics Industry', 6, 'ELECTRONIC'),
+(nextval('mt_btype_id_seq'), now(), now(), true, 'Electronics Industry', 6, 'ELECTRONICS'),
 (nextval('mt_btype_id_seq'), now(), now(), true, 'Energy Industry', 7, 'ENERGY'),
 (nextval('mt_btype_id_seq'), now(), now(), true, 'Food Industry', 8, 'FOOD'),
 (nextval('mt_btype_id_seq'), now(), now(), true, 'Health care Industry', 9, 'HEALTH_CARE'),
